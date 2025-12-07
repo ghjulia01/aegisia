@@ -86,10 +86,24 @@ export const useLanguage = () => {
     [language]
   );
 
+  const availableLanguages: Language[] = ['fr', 'en', 'es', 'de'];
+
+  // create a translator function that also has the translation keys attached
+  const translator: any = (key: string) => translate(key);
+  Object.assign(translator, t);
+
   return {
+    // core state
     language,
     setLanguage,
-    t,
+
+    // compatibility aliases used throughout the app
+    currentLanguage: language,
+    changeLanguage: setLanguage,
+    availableLanguages,
+
+    // translation helpers
+    t: translator,
     translate,
     formatDate,
     formatNumber,

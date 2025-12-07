@@ -370,8 +370,8 @@ const DependencyTable: React.FC<DependencyTableProps> = ({ dependencies, t }) =>
                   {dep.vulnerabilities?.length || 0}
                 </span>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {new Date(dep.lastUpdate).toLocaleDateString()}
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {dep.lastUpdate ? new Date(dep.lastUpdate).toLocaleDateString() : 'N/A'}
               </td>
             </tr>
           ))}

@@ -93,7 +93,7 @@ export class CVEClient {
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
     return (allCVEs.details || []).filter(cve => {
-      const cveDate = new Date(cve.published);
+      const cveDate = new Date(cve.published || Date.now());
       return cveDate > thirtyDaysAgo;
     });
   }
@@ -125,7 +125,7 @@ export class CVEClient {
     }
 
     // Sort by severity (highest first)
-    details.sort((a, b) => b.severity - a.severity);
+    details.sort((a, b) => (b.severity || 0) - (a.severity || 0));
 
     return {
       count: rawData.length,
@@ -270,7 +270,7 @@ export class CVEClient {
     let high = 0, medium = 0, low = 0;
 
     details.forEach(cve => {
-      const level = this.getSeverityLevel(cve.severity);
+      const level = this.getSeverityLevel(cve.severity || 0);
       if (level === 'high') high++;
       else if (level === 'medium') medium++;
       else if (level === 'low') low++;
@@ -278,7 +278,7 @@ export class CVEClient {
 
     // Sort by date
     const sorted = [...details].sort(
-      (a, b) => new Date(b.published).getTime() - new Date(a.published).getTime()
+      (a, b) => new Date(b.published || Date.now()).getTime() - new Date(a.published || Date.now()).getTime()
     );
 
     return {

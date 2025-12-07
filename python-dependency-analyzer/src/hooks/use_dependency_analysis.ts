@@ -5,10 +5,12 @@
 import { useState, useCallback } from 'react';
 import { Dependency, CVEDetail, AlternativePackage } from '../types/Dependency';
 import { PyPIClient } from '../services/api/PyPIClient';
-import { GitHubClient } from '../services/api/GitHubClient';
-import { CVEClient } from '../services/api/CVEClient';
+import { GitHubClient } from '../services/api/github_client';
+import { CVEClient } from '../services/api/cve_client';
 import { RiskCalculator } from '../services/analysis/RiskCalculator';
-import { COMMON_ALTERNATIVES } from '../config/risk.config';
+
+// Local fallback for common alternatives (can be extended later)
+const COMMON_ALTERNATIVES: Record<string, string[]> = {};
 
 /**
  * Main hook for dependency analysis
@@ -20,6 +22,8 @@ export const useDependencyAnalysis = () => {
   const [dependencyGraph, setDependencyGraph] = useState<Record<string, string[]>>({});
   const [cveAlerts, setCveAlerts] = useState<CVEDetail[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState<{ current: number; total: number }>({ current: 0, total: 0 });
   const [status, setStatus] = useState<string>('');
 
   // Initialize clients
@@ -35,6 +39,8 @@ export const useDependencyAnalysis = () => {
   const analyzePackage = useCallback(
     async (packageName: string): Promise<void> => {
       setLoading(true);
+      setError(null);
+      setProgress({ current: 0, total: 1 });
       setStatus(`Analyzing ${packageName}...`);
 
       try {
@@ -59,6 +65,7 @@ export const useDependencyAnalysis = () => {
         // Step 5: Calculate risk score
         const dependency: Dependency = {
           name: packageName,
+          version: pypiData.info.version,
           type: 'import',
           country: 'USA', // Default, can be enhanced with maintainer location
           openSource: true,
@@ -69,7 +76,12 @@ export const useDependencyAnalysis = () => {
           homepage: pypiData.info.home_page || pypiData.info.project_url,
           pypiData: {
             version: pypiData.info.version,
-            summary: pypiData.info.summary,
+            author: pypiData.info.author || '',
+            maintainer: pypiData.info.maintainer || '',
+            license: pypiData.info.license || '',
+            summary: pypiData.info.summary || '',
+            homeUrl: pypiData.info.home_page || pypiData.info.project_url || '',
+            releaseDate: pypiData.releases[pypiData.info.version]?.[0]?.upload_time || '',
           },
           githubData: githubData || undefined,
           enrichedData: {
@@ -77,7 +89,8 @@ export const useDependencyAnalysis = () => {
             githubData: githubData || undefined,
           },
           transitiveDeps,
-          cveAlerts: cveData.details || [],
+          vulnerabilities: cveData.details || [],
+          cveAlerts: (cveData.details || []).map(d => ({ ...d, package: packageName })),
           riskScore: 3, // Will be calculated next
         };
 
@@ -95,16 +108,18 @@ export const useDependencyAnalysis = () => {
 
         // Add CVE alerts if any
         if (cveData.details && cveData.details.length > 0) {
-          setCveAlerts(prev => [...prev, ...cveData.details!]);
+          setCveAlerts(prev => [...prev, ...cveData.details!.map(d => ({ ...d, package: packageName }))]);
         }
 
         setStatus(`✅ Analysis complete for ${packageName}`);
+        setProgress({ current: 1, total: 1 });
         console.log(`[Analysis] Completed ${packageName}`, dependency);
-      } catch (error) {
-        const errorMessage = (error as Error).message;
+      } catch (err) {
+        const errorMessage = (err as Error).message;
         setStatus(`❌ Error analyzing ${packageName}: ${errorMessage}`);
-        console.error(`[Analysis] Error:`, error);
-        throw error;
+        setError(errorMessage);
+        console.error(`[Analysis] Error:`, err);
+        throw err;
       } finally {
         setLoading(false);
       }
@@ -133,6 +148,7 @@ export const useDependencyAnalysis = () => {
       setStatus(`Analyzing ${packageNames.length} packages...`);
 
       let completed = 0;
+      setProgress({ current: 0, total: packageNames.length });
       const errors: string[] = [];
 
       for (const pkgName of packageNames) {
@@ -140,6 +156,7 @@ export const useDependencyAnalysis = () => {
           await analyzePackage(pkgName);
           completed++;
           setStatus(`Progress: ${completed}/${packageNames.length} packages analyzed`);
+          setProgress({ current: completed, total: packageNames.length });
         } catch (error) {
           errors.push(pkgName);
           console.error(`[Bulk] Failed to analyze ${pkgName}:`, error);
@@ -162,6 +179,32 @@ export const useDependencyAnalysis = () => {
     },
     [analyzePackage]
   );
+
+    /**
+     * Analyze an array of package names
+     * @param packages - array of package names
+     */
+    const analyzeMultiplePackages = useCallback(
+      async (packages: string[]): Promise<void> => {
+        setLoading(true);
+        setProgress({ current: 0, total: packages.length });
+        let completed = 0;
+
+        for (const pkg of packages) {
+          try {
+            await analyzePackage(pkg);
+            completed++;
+            setProgress({ current: completed, total: packages.length });
+          } catch (err) {
+            console.error(`[Multi] Failed to analyze ${pkg}:`, err);
+          }
+          await delay(250);
+        }
+
+        setLoading(false);
+      },
+      [analyzePackage]
+    );
 
   /**
    * Remove a package from analysis
@@ -189,7 +232,7 @@ export const useDependencyAnalysis = () => {
     });
 
     // Remove associated CVE alerts
-    setCveAlerts(prev => prev.filter(alert => alert.package !== dep.name));
+    setCveAlerts(prev => prev.filter(alert => (alert as any).package !== dep.name));
 
     console.log(`[Analysis] Removed ${dep.name}`);
   }, [dependencies]);
@@ -203,6 +246,8 @@ export const useDependencyAnalysis = () => {
     setDependencyGraph({});
     setCveAlerts([]);
     setStatus('');
+    setError(null);
+    setProgress({ current: 0, total: 0 });
     console.log('[Analysis] Cleared all data');
   }, []);
 
@@ -248,6 +293,7 @@ export const useDependencyAnalysis = () => {
 
         const altDep: AlternativePackage = {
           name: altName,
+          version: pypiData.info.version,
           type: 'import',
           country: 'USA',
           openSource: true,
@@ -257,7 +303,12 @@ export const useDependencyAnalysis = () => {
           license: pypiData.info.license || 'Not specified',
           pypiData: {
             version: pypiData.info.version,
-            summary: pypiData.info.summary,
+            author: pypiData.info.author || '',
+            maintainer: pypiData.info.maintainer || '',
+            license: pypiData.info.license || '',
+            summary: pypiData.info.summary || '',
+            homeUrl: pypiData.info.home_page || pypiData.info.project_url || '',
+            releaseDate: pypiData.releases[pypiData.info.version]?.[0]?.upload_time || '',
           },
           githubData: githubData || undefined,
           enrichedData: {
@@ -320,6 +371,8 @@ export const useDependencyAnalysis = () => {
     cveAlerts,
     loading,
     status,
+    error,
+    progress,
 
     // Actions
     analyzePackage,
@@ -327,6 +380,47 @@ export const useDependencyAnalysis = () => {
     removePackage,
     clearAll,
     reanalyze,
+
+    // Aliases expected by components
+    isAnalyzing: loading,
+    analyzeDependency: analyzePackage,
+    analyzeMultipleDependencies: analyzeMultiplePackages,
+    clearResults: clearAll,
+    exportReport: (format: 'json' | 'csv' = 'json') => {
+      try {
+        if (format === 'json') {
+          const payload = JSON.stringify(dependencies, null, 2);
+          const blob = new Blob([payload], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `dependency-report-${new Date().toISOString()}.json`;
+          a.click();
+          URL.revokeObjectURL(url);
+        } else {
+          // simple CSV export
+          const headers = ['name', 'version', 'license', 'riskScore', 'vulnerabilities', 'lastUpdate'];
+          const rows = dependencies.map(d => [
+            d.name,
+            d.version || '',
+            d.license || '',
+            d.riskScore?.toString() || '0',
+            (d.vulnerabilities?.length || 0).toString(),
+            d.lastUpdate || ''
+          ].join(','));
+          const csv = [headers.join(','), ...rows].join('\n');
+          const blob = new Blob([csv], { type: 'text/csv' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `dependency-report-${new Date().toISOString()}.csv`;
+          a.click();
+          URL.revokeObjectURL(url);
+        }
+      } catch (e) {
+        console.error('[Export] Failed to export report', e);
+      }
+    },
 
     // Computed
     statistics: getStatistics(),

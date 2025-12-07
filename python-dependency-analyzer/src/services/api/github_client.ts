@@ -117,6 +117,7 @@ export class GitHubClient {
         license: data.license?.name || 'Not specified',
         language: data.language || 'Unknown',
         archived: data.archived,
+        description: (data as any).description || '',
       };
 
       // Cache the result

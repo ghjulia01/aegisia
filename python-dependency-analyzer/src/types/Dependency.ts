@@ -26,6 +26,9 @@ export interface GitHubData {
   archived: boolean;
   language: string;
   description: string;
+  watchers?: number;
+  createdAt?: string;
+  license?: string;
 }
 
 /**
@@ -42,10 +45,18 @@ export interface CVEData {
  */
 export interface CVEDetail {
   id: string;
-  cvssScore: number;
+  severity?: number;
+  cvssScore?: number;
   description: string;
-  affectedVersions: string[];
+  published?: string;
+  affectedVersions?: string[];
+  package?: string;
 }
+
+/**
+ * Convenience: vulnerability entry used across the app
+ */
+export interface Vulnerability extends CVEDetail {}
 
 /**
  * Enriched Data from All APIs
@@ -62,12 +73,18 @@ export interface EnrichedData {
 export interface Dependency {
   name: string;
   version: string;
+  type?: 'import' | 'package' | 'dev' | string;
   country: string;
   license: string;
   openSource: boolean;
   pypiData?: PyPIData;
   githubData?: GitHubData;
   enrichedData?: EnrichedData;
+  vulnerabilities?: CVEDetail[];
+  cveAlerts?: CVEDetail[];
+  lastUpdate?: string;
+  maintainer?: string;
+  homepage?: string;
   riskScore: number;
   transitiveDeps?: string[];
 }
@@ -90,6 +107,18 @@ export interface CacheEntry<T = any> {
   data: T;
   expiry: number;
   timestamp: number;
+}
+
+/**
+ * Language code used in the UI
+ */
+export type Language = 'fr' | 'en' | 'es' | 'de';
+
+/**
+ * Alternative package recommendation shape
+ */
+export interface AlternativePackage extends Dependency {
+  reasonForRecommendation?: string;
 }
 
 /**

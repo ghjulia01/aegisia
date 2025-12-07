@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Dependency } from '../../types/Dependency';
-import { useLanguage } from '../../hooks/useLanguage';
+import type { Dependency } from '@/types';
+import { useLanguage } from '@hooks/use_language_hook';
 
 interface Props {
   dependencies: Dependency[];

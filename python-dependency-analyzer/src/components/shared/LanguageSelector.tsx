@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { useLanguage } from '../../hooks/useLanguage';
+import { useLanguage } from '@hooks/use_language_hook';
 
 interface LanguageSelectorProps {
   variant?: 'buttons' | 'dropdown';

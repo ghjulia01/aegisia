@@ -6,9 +6,9 @@
  */
 
 import React, { useState } from 'react';
-import { useDependencyAnalysis } from '../../hooks/useDependencyAnalysis';
-import { useLanguage } from '../../hooks/useLanguage';
-import { Dependency } from '../../types';
+import { useDependencyAnalysis } from '@hooks/use_dependency_analysis';
+import { useLanguage } from '@hooks/use_language_hook';
+import type { Dependency } from '@/types';
 
 /**
  * Composant principal d'analyse de dépendances

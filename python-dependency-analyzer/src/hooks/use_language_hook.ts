@@ -88,10 +88,6 @@ export const useLanguage = () => {
 
   const availableLanguages: Language[] = ['fr', 'en', 'es', 'de'];
 
-  // create a translator function that also has the translation keys attached
-  const translator: any = (key: string) => translate(key);
-  Object.assign(translator, t);
-
   return {
     // core state
     language,
@@ -103,9 +99,10 @@ export const useLanguage = () => {
     availableLanguages,
 
     // translation helpers
-    t: translator,
+    t: translate, // Return the function directly
     translate,
     formatDate,
     formatNumber,
+    translations: t, // Also expose the raw translations object
   };
 };

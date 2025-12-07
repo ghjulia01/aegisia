@@ -88,6 +88,18 @@ export const useLanguage = () => {
 
   const availableLanguages: Language[] = ['fr', 'en', 'es', 'de'];
 
+  // Create a proxy object that acts as both a function AND an object with translation keys
+  const tProxy = new Proxy(translate, {
+    get(target: any, prop: string | symbol) {
+      if (prop === 'call' || prop === 'apply' || prop === 'bind') {
+        return target[prop];
+      }
+      // Return translation value if it exists, otherwise return the function property
+      const transValue = (t as any)[prop];
+      return transValue !== undefined ? transValue : target[prop];
+    },
+  }) as any;
+
   return {
     // core state
     language,
@@ -98,8 +110,8 @@ export const useLanguage = () => {
     changeLanguage: setLanguage,
     availableLanguages,
 
-    // translation helpers
-    t: translate, // Return the function directly
+    // translation helpers - t is now both callable AND has properties
+    t: tProxy,
     translate,
     formatDate,
     formatNumber,

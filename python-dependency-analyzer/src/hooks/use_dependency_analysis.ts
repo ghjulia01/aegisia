@@ -13,6 +13,53 @@ import { RiskCalculator } from '../services/analysis/RiskCalculator';
 const COMMON_ALTERNATIVES: Record<string, string[]> = {};
 
 /**
+ * Parse les noms de packages depuis requirements.txt
+ * 
+ * Supporte :
+ * - Espaces : "pkg1 pkg2 pkg3"
+ * - Retours à la ligne : "pkg1\npkg2\npkg3"
+ * - Virgules : "pkg1, pkg2, pkg3"
+ * - Version specifiers : "pkg==1.0.0" → "pkg"
+ * - Extras : "pkg[security]" → "pkg"
+ * - Commentaires : "# comment" → ignoré
+ * - URLs git : "git+https://..." → ignoré
+ */
+const parsePackageNames = (input: string): string[] => {
+  // Split sur espaces, virgules, points-virgules ET retours à la ligne
+  const lines = input.split(/[\s,;\n]+/);
+
+  const packages: string[] = [];
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    // Ignorer commentaires, lignes vides et URLs git
+    if (!trimmed || trimmed.startsWith('#') || trimmed.startsWith('git+')) {
+      continue;
+    }
+
+    // Extraire le nom (avant ==, >=, etc.)
+    const match = trimmed.match(/^([a-zA-Z0-9._-]+)/);
+    if (match) {
+      let packageName = match[1];
+
+      // Supprimer extras [...]
+      packageName = packageName.split('[')[0];
+
+      // Normaliser (minuscules + tirets)
+      packageName = packageName.toLowerCase().replace(/_/g, '-');
+
+      if (packageName) {
+        packages.push(packageName);
+      }
+    }
+  }
+
+  // Supprimer doublons
+  return [...new Set(packages)];
+};
+
+/**
  * Main hook for dependency analysis
  * Orchestrates all services and manages state
  */
@@ -133,16 +180,14 @@ export const useDependencyAnalysis = () => {
    */
   const analyzeBulk = useCallback(
     async (requirements: string): Promise<void> => {
-      const lines = requirements
-        .split('\n')
-        .map(line => line.trim())
-        .filter(line => line && !line.startsWith('#'));
+      // ✅ NOUVEAU - Parser tous les packages d'un coup avec support complet
+      const packageNames = parsePackageNames(requirements);
 
-      const packageNames = lines.map(line => {
-        // Extract package name (before ==, >=, <=, etc.)
-        const match = line.match(/^([a-zA-Z0-9\-_.]+)/);
-        return match ? match[1] : '';
-      }).filter(Boolean);
+      if (packageNames.length === 0) {
+        setError('Aucun package valide trouvé');
+        setLoading(false);
+        return;
+      }
 
       setLoading(true);
       setStatus(`Analyzing ${packageNames.length} packages...`);
@@ -182,19 +227,30 @@ export const useDependencyAnalysis = () => {
 
     /**
      * Analyze an array of package names
-     * @param packages - array of package names
+     * Supports both array format and requirements.txt format
+     * @param packages - array of package names or requirements string (can be space/comma/newline separated)
      */
     const analyzeMultiplePackages = useCallback(
-      async (packages: string[]): Promise<void> => {
+      async (packages: string | string[]): Promise<void> => {
+        // Support both array and string formats with automatic parsing
+        const packageNames = Array.isArray(packages)
+          ? packages
+          : parsePackageNames(packages);
+
+        if (packageNames.length === 0) {
+          setError('Aucun package valide trouvé');
+          return;
+        }
+
         setLoading(true);
-        setProgress({ current: 0, total: packages.length });
+        setProgress({ current: 0, total: packageNames.length });
         let completed = 0;
 
-        for (const pkg of packages) {
+        for (const pkg of packageNames) {
           try {
             await analyzePackage(pkg);
             completed++;
-            setProgress({ current: completed, total: packages.length });
+            setProgress({ current: completed, total: packageNames.length });
           } catch (err) {
             console.error(`[Multi] Failed to analyze ${pkg}:`, err);
           }

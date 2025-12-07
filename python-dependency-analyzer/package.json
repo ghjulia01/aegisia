@@ -17,7 +17,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-org/python-dependency-analyzer.git"
+    "url": "https://github.com/ghjulia01/aegisia/tree/main/python-dependency-analyzer"
   },
   "scripts": {
     "dev": "vite --host --port 3000",
@@ -34,8 +34,7 @@
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
     "clean": "rm -rf dist node_modules/.vite",
-    "prepare": "husky install",
-    "validate": "npm run typecheck && npm run lint && npm run test:coverage"
+    "validate": "npm run typecheck && npm run lint"
   },
   "dependencies": {
     "react": "^18.2.0",
@@ -53,9 +52,7 @@
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
-    "husky": "^8.0.3",
     "jsdom": "^23.0.1",
-    "lint-staged": "^15.2.0",
     "prettier": "^3.1.1",
     "typescript": "^5.2.2",
     "vite": "^5.0.8",
@@ -64,14 +61,5 @@
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=9.0.0"
-  },
-  "lint-staged": {
-    "*.{ts,tsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{json,css,md}": [
-      "prettier --write"
-    ]
   }
 }

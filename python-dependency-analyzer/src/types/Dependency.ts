@@ -85,6 +85,11 @@ export interface Dependency {
   lastUpdate?: string;
   maintainer?: string;
   homepage?: string;
+  downloads?: number;
+  stars?: number;
+  issues?: number;
+  maintainers?: number;
+  description?: string;
   riskScore: number;
   transitiveDeps?: string[];
 }

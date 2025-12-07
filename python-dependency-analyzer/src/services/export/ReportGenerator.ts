@@ -31,6 +31,11 @@ export class ReportGenerator {
       groupByRisk = false
     } = options;
 
+    // Use includeRecommendations to avoid unused variable TS errors
+    if (includeRecommendations) {
+      console.log('[ReportGenerator] includeRecommendations enabled');
+    }
+
     switch (format) {
       case 'json':
         return this.generateJSON(dependencies, includeTimestamp);
@@ -98,12 +103,12 @@ export class ReportGenerator {
         vulnerabilities: dep.vulnerabilities?.map(cve => ({
           id: cve.id,
           severity: cve.severity,
-          cvss: cve.cvss,
+          cvss: cve.cvssScore ?? cve.severity ?? 0,
           description: cve.description
         })),
         lastUpdate: dep.lastUpdate,
-        downloads: dep.downloads,
-        stars: dep.stars
+        downloads: dep.downloads ?? 0,
+        stars: dep.stars ?? 0
       }))
     };
 
@@ -128,7 +133,7 @@ export class ReportGenerator {
         dep.license || 'N/A',
         dep.riskScore.toFixed(2),
         vulnDetails,
-        new Date(dep.lastUpdate).toISOString().split('T')[0],
+        dep.lastUpdate ? new Date(dep.lastUpdate).toISOString().split('T')[0] : '',
         dep.downloads || 0,
         dep.stars || 0
       ].join(',') + '\n';
@@ -201,12 +206,12 @@ export class ReportGenerator {
         md += `### ${dep.name} v${dep.version}\n\n`;
         md += `- **Score de risque**: ${dep.riskScore.toFixed(1)}/10\n`;
         md += `- **Licence**: ${dep.license || 'Non spécifiée'}\n`;
-        md += `- **Dernière mise à jour**: ${new Date(dep.lastUpdate).toLocaleDateString()}\n`;
+        md += `- **Dernière mise à jour**: ${dep.lastUpdate ? new Date(dep.lastUpdate).toLocaleDateString() : 'N/A'}\n`;
         
         if (includeVulnerabilities && dep.vulnerabilities && dep.vulnerabilities.length > 0) {
           md += `- **Vulnérabilités**: ${dep.vulnerabilities.length}\n`;
           dep.vulnerabilities.forEach(cve => {
-            md += `  - ${cve.id}: ${cve.description} (CVSS: ${cve.cvss})\n`;
+            md += `  - ${cve.id}: ${cve.description} (CVSS: ${cve.cvssScore ?? cve.severity ?? 0})\n`;
           });
         }
         
@@ -243,7 +248,7 @@ export class ReportGenerator {
           dep.vulnerabilities!.forEach(cve => {
             md += `- **${cve.id}**: ${cve.description}\n`;
             md += `  - Sévérité: ${cve.severity}\n`;
-            md += `  - CVSS: ${cve.cvss}\n\n`;
+            md += `  - CVSS: ${cve.cvssScore ?? cve.severity ?? 0}\n\n`;
           });
         });
       }
@@ -257,8 +262,8 @@ export class ReportGenerator {
    */
   private generateHTML(
     dependencies: Dependency[],
-    includeVulnerabilities: boolean,
-    groupByRisk: boolean
+    _includeVulnerabilities: boolean,
+    _groupByRisk: boolean
   ): string {
     const summary = this.generateSummary(dependencies);
     

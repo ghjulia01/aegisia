@@ -266,7 +266,7 @@ export class ISO42001Generator {
     return assessment;
   }
 
-  private generateResourceRequirements(aiPackages: any[]): string {
+  private generateResourceRequirements(_aiPackages: any[]): string {
     let resources = '### Compétences Requises\n\n';
     resources += '- Data Scientists / ML Engineers\n';
     resources += '- Experts en éthique IA\n';
@@ -282,7 +282,7 @@ export class ISO42001Generator {
     return resources;
   }
 
-  private generatePerformanceMetrics(aiPackages: any[]): string {
+  private generatePerformanceMetrics(_aiPackages: any[]): string {
     let metrics = '### Métriques Clés\n\n';
     metrics += '- **Exactitude (Accuracy)**: % de prédictions correctes\n';
     metrics += '- **Précision / Rappel**: Pour les systèmes de classification\n';
@@ -306,7 +306,7 @@ export class AIActGenerator {
     const aiPackages = this.identifyAIPackages(dependencies);
     
     let report = '# 🇪🇺 Rapport de Conformité EU AI Act\n\n';
-    report += `*Généré le ${new Date().toLocaleString()}*\n\n';
+    report += `*Généré le ${new Date().toLocaleString()}*\n\n`;
     
     report += '## Classification des Risques AI Act\n\n';
     

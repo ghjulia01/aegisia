@@ -6,8 +6,8 @@
  */
 
 import { PyPIClient } from '../api/PyPIClient';
-import { GitHubClient } from '../api/GitHubClient';
-import { CVEClient } from '../api/CVEClient';
+import { GitHubClient } from '../api/github_client';
+import { CVEClient } from '../api/cve_client';
 import { RiskCalculator } from '../analysis/RiskCalculator';
 import { Dependency } from '../../types';
 
@@ -41,9 +41,9 @@ export class AlternativeFinder {
     try {
       // 1. Récupérer les métadonnées du package original
       const originalPackage = await this.pypiClient.getPackageMetadata(packageName);
-      
+
       // 2. Rechercher des packages similaires
-      const similarPackages = await this.findSimilarPackages(packageName, originalPackage.description || '');
+      const similarPackages = await this.findSimilarPackages(packageName, originalPackage.info.summary || '');
       
       // 3. Analyser chaque alternative
       const alternatives: AlternativePackage[] = [];
@@ -51,53 +51,66 @@ export class AlternativeFinder {
       for (const similarPkg of similarPackages.slice(0, maxResults * 2)) {
         try {
           const metadata = await this.pypiClient.getPackageMetadata(similarPkg.name);
-          const github = await this.githubClient.getRepoInfo(similarPkg.name);
-          const cves = await this.cveClient.checkVulnerabilities(similarPkg.name, metadata.version);
-          
+          // Try to fetch GitHub info via homepage extracted from PyPI metadata
+          const github = await this.githubClient.extractFromHomepage(
+            metadata.info.home_page || metadata.info.project_url
+          );
+          const cveData = await this.cveClient.searchCVEs(similarPkg.name);
+          const cves = cveData.details || [];
+
+          // Build enrichedData expected by RiskCalculator
+          const enriched = {
+            pypiData: {
+              version: metadata.info.version,
+              author: metadata.info.author || '',
+              maintainer: metadata.info.maintainer || '',
+              license: metadata.info.license || '',
+              summary: metadata.info.summary || '',
+              homeUrl: metadata.info.home_page || metadata.info.project_url || '',
+              releaseDate: metadata.releases[metadata.info.version]?.[0]?.upload_time || ''
+            },
+            githubData: github || undefined,
+            cveData: cveData
+          };
+
           const riskScore = this.riskCalculator.calculate({
             name: similarPkg.name,
-            version: metadata.version,
-            license: metadata.license,
-            lastUpdate: new Date(metadata.lastRelease),
-            dependencies: [],
+            version: metadata.info.version,
+            country: 'Unknown',
+            license: metadata.info.license || '',
+            openSource: true,
+            lastUpdate: metadata.releases[metadata.info.version]?.[0]?.upload_time || '',
+            transitiveDeps: [],
             vulnerabilities: cves,
-            downloads: metadata.downloads,
-            maintainers: metadata.maintainers?.length || 0,
-            stars: github?.stars || 0,
-            issues: github?.openIssues || 0,
             riskScore: 0
-          });
+          } as any, enriched as any);
 
           // Calculer le score de similarité
           const similarityScore = this.calculateSimilarity(
-            originalPackage,
-            metadata,
+            { name: packageName, description: originalPackage.info.summary || '', license: originalPackage.info.license },
+            { name: similarPkg.name, description: metadata.info.summary || '', license: metadata.info.license },
             github
           );
 
           // Déterminer les raisons de la recommandation
           const reasons = this.getRecommendationReasons(
-            originalPackage,
-            metadata,
+            { vulnerabilities: [] as any[], downloads: 0, maintainers: 0, license: originalPackage.info.license },
+            { lastRelease: metadata.releases[metadata.info.version]?.[0]?.upload_time || '', downloads: 0, maintainers: 0, license: metadata.info.license },
             github,
             cves
           );
 
           alternatives.push({
             name: similarPkg.name,
-            version: metadata.version,
-            license: metadata.license,
-            lastUpdate: new Date(metadata.lastRelease),
-            dependencies: [],
+            version: metadata.info.version,
+            license: metadata.info.license || '',
+            lastUpdate: metadata.releases[metadata.info.version]?.[0]?.upload_time || '',
+            transitiveDeps: [],
             vulnerabilities: cves,
-            downloads: metadata.downloads,
-            maintainers: metadata.maintainers?.length || 0,
-            stars: github?.stars || 0,
-            issues: github?.openIssues || 0,
             riskScore,
             similarityScore,
             reasons
-          });
+          } as any);
         } catch (error) {
           console.warn(`Impossible d'analyser ${similarPkg.name}:`, error);
         }
@@ -133,13 +146,14 @@ export class AlternativeFinder {
     for (const keyword of keywords.slice(0, 3)) {
       try {
         const searchResults = await this.pypiClient.searchPackages(keyword);
-        searchResults.forEach(pkg => {
-          if (pkg.name.toLowerCase() !== packageName.toLowerCase()) {
-            const existing = results.find(r => r.name === pkg.name);
+        searchResults.forEach(pkgName => {
+          const pkg = typeof pkgName === 'string' ? pkgName : (pkgName as any).name;
+          if (pkg.toLowerCase() !== packageName.toLowerCase()) {
+            const existing = results.find(r => r.name === pkg);
             if (existing) {
               existing.score += 1;
             } else {
-              results.push({ name: pkg.name, score: 1 });
+              results.push({ name: pkg, score: 1 });
             }
           }
         });

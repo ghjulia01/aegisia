@@ -6,13 +6,13 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { Dependency, CVEData } from '../types';
-import { CVEClient } from '../services/api/CVEClient';
+import { Dependency, CVEDetail } from '../types/Dependency';
+import { CVEClient } from '../services/api/cve_client';
 
 interface CVEAlert {
   packageName: string;
   packageVersion: string;
-  cve: CVEData;
+  cve: CVEDetail;
   timestamp: Date;
   severity: 'critical' | 'high' | 'medium' | 'low';
 }
@@ -50,8 +50,9 @@ export const useCVEMonitoring = (
 
     for (const dep of monitoredDependencies) {
       try {
-        const cves = await cveClient.checkVulnerabilities(dep.name, dep.version);
-        
+        const cveData = await cveClient.searchCVEs(dep.name);
+        const cves = cveData.details || [];
+
         // Identifier les nouvelles CVEs (pas déjà dans les alertes)
         const existingCVEIds = new Set(alerts.map(a => a.cve.id));
         const newCVEs = cves.filter(cve => !existingCVEIds.has(cve.id));
@@ -62,7 +63,7 @@ export const useCVEMonitoring = (
             packageVersion: dep.version,
             cve,
             timestamp: new Date(),
-            severity: getSeverityFromCVSS(cve.cvss)
+            severity: getSeverityFromCVSS(cve.cvssScore || cve.severity || 0)
           }));
 
           setAlerts(prev => [...newAlerts, ...prev]);

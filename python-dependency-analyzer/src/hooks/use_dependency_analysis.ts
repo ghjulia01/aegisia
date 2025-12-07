@@ -233,9 +233,15 @@ export const useDependencyAnalysis = () => {
     const analyzeMultiplePackages = useCallback(
       async (packages: string | string[]): Promise<void> => {
         // Support both array and string formats with automatic parsing
-        const packageNames = Array.isArray(packages)
-          ? packages
-          : parsePackageNames(packages);
+        let packageNames: string[];
+        
+        if (Array.isArray(packages)) {
+          // If it's an array, join and parse to handle version specifiers
+          packageNames = parsePackageNames(packages.join('\n'));
+        } else {
+          // If it's a string, parse it directly
+          packageNames = parsePackageNames(packages);
+        }
 
         if (packageNames.length === 0) {
           setError('Aucun package valide trouvé');

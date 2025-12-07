@@ -1,0 +1,77 @@
+{
+  "name": "python-dependency-analyzer-pro",
+  "version": "1.0.0",
+  "description": "Enterprise-grade Python dependency analysis with ISO 42001, GDPR & EU AI Act compliance",
+  "type": "module",
+  "author": "Your Organization",
+  "license": "MIT",
+  "keywords": [
+    "dependency-analysis",
+    "security",
+    "compliance",
+    "iso-42001",
+    "gdpr",
+    "ai-act",
+    "python",
+    "risk-assessment"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/python-dependency-analyzer.git"
+  },
+  "scripts": {
+    "dev": "vite --host --port 3000",
+    "build": "tsc && vite build",
+    "build:analyze": "vite build --mode analyze",
+    "preview": "vite preview --port 3000",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint . --ext ts,tsx --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx,json,css,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,json,css,md}\"",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui",
+    "clean": "rm -rf dist node_modules/.vite",
+    "prepare": "husky install",
+    "validate": "npm run typecheck && npm run lint && npm run test:coverage"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "lucide-react": "^0.263.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@typescript-eslint/eslint-plugin": "^6.14.0",
+    "@typescript-eslint/parser": "^6.14.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "@vitest/ui": "^1.0.4",
+    "eslint": "^8.55.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "husky": "^8.0.3",
+    "jsdom": "^23.0.1",
+    "lint-staged": "^15.2.0",
+    "prettier": "^3.1.1",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.8",
+    "vitest": "^1.0.4"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,css,md}": [
+      "prettier --write"
+    ]
+  }
+}

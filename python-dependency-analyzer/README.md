@@ -87,4 +87,4 @@ MIT
 
 ## Authors
 
-Your Organization
+Julie Colleoni

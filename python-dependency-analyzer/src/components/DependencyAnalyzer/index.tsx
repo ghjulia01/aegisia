@@ -9,6 +9,7 @@ import React, { useState } from 'react';
 import { useDependencyAnalysis } from '@hooks/use_dependency_analysis';
 import { useLanguage } from '@hooks/use_language_hook';
 import type { Dependency } from '@/types';
+import { DependencyTable } from '../shared/DependencyTable';
 
 /**
  * Composant principal d'analyse de dépendances
@@ -25,7 +26,8 @@ export const DependencyAnalyzer: React.FC = () => {
     analyzeDependency,
     analyzeMultipleDependencies,
     clearResults,
-    exportReport
+    exportReport,
+    removePackage
   } = useDependencyAnalysis();
 
   const { t, currentLanguage, changeLanguage, availableLanguages } = useLanguage();
@@ -247,7 +249,7 @@ export const DependencyAnalyzer: React.FC = () => {
 
             {/* Table View */}
             {selectedTab === 'table' && (
-              <DependencyTable dependencies={dependencies} t={t} />
+              <DependencyTable dependencies={dependencies} onRemove={removePackage} />
             )}
 
             {/* Chart View */}
@@ -305,81 +307,7 @@ const StatCard: React.FC<StatCardProps> = ({ label, value, color }) => {
   );
 };
 
-/**
- * Tableau des dépendances
- */
-interface DependencyTableProps {
-  dependencies: Dependency[];
-  t: (key: string) => string;
-}
 
-const DependencyTable: React.FC<DependencyTableProps> = ({ dependencies, t }) => {
-  const getRiskColor = (score: number) => {
-    if (score >= 8) return 'text-red-600 bg-red-50';
-    if (score >= 6) return 'text-orange-600 bg-orange-50';
-    if (score >= 4) return 'text-yellow-600 bg-yellow-50';
-    return 'text-green-600 bg-green-50';
-  };
-
-  return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
-          <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              {t('package')}
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              {t('version')}
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              {t('license')}
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              {t('riskScore')}
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              {t('vulnerabilities')}
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              {t('lastUpdate')}
-            </th>
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {dependencies.map((dep) => (
-            <tr key={dep.name} className="hover:bg-gray-50 transition-colors">
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm font-medium text-gray-900">{dep.name}</div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-gray-500">{dep.version}</div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <div className="text-sm text-gray-500">{dep.license || 'N/A'}</div>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <span className={`px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full ${getRiskColor(dep.riskScore)}`}>
-                  {dep.riskScore.toFixed(1)}
-                </span>
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <span className={`px-2 py-1 text-xs font-medium rounded ${
-                  (dep.vulnerabilities?.length || 0) > 0 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
-                }`}>
-                  {dep.vulnerabilities?.length || 0}
-                </span>
-              </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {dep.lastUpdate ? new Date(dep.lastUpdate).toLocaleDateString() : 'N/A'}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-};
 
 /**
  * Graphique de distribution des risques

@@ -18,16 +18,17 @@ export class RiskCalculator {
    * @returns Risk score (1-5)
    */
   calculate(dep: Dependency, enrichedData: EnrichedData): number {
-    let score = 3; // Start with neutral base score
+    // Start with a more optimistic base (recommended change)
+    let score = 2.5;
 
     // Factor 1: CVE Score (Weight: 2.0) - Highest priority
     score += this.calculateCVEScore(enrichedData.cveData);
 
     // Factor 2: Maintenance Score (Weight: 1.5)
-    score += this.calculateMaintenanceScore(enrichedData.githubData);
+    score += this.calculateMaintenanceScore(enrichedData.githubData, dep.downloads, dep.name);
 
     // Factor 3: Community Score (Weight: 1.0)
-    score += this.calculateCommunityScore(enrichedData.githubData, enrichedData.cveData);
+    score += this.calculateCommunityScore(enrichedData.githubData, enrichedData.cveData, dep.downloads, dep.name);
 
     // Factor 4: Open Source (Weight: 1.0)
     score += this.calculateOpenSourceScore(dep.openSource);
@@ -78,9 +79,11 @@ export class RiskCalculator {
    * @param githubData - GitHub repository data
    * @returns Risk contribution
    */
-  private calculateMaintenanceScore(githubData?: GitHubData): number {
+  private calculateMaintenanceScore(githubData?: GitHubData, downloads?: number, pkgName?: string): number {
     if (!githubData) {
-      return 0.5; // Unknown = slight penalty
+      // Use popularity fallback or whitelist detection to reduce penalty
+      if (pkgName && this.isWellKnownPackage(pkgName)) return 0; // no penalty for well-known packages
+      return this.calculatePopularityFallback(downloads);
     }
 
     const { archived, lastPush } = githubData;
@@ -117,9 +120,10 @@ export class RiskCalculator {
    * @param cveData - CVE data (used for new package bonus)
    * @returns Risk contribution
    */
-  private calculateCommunityScore(githubData?: GitHubData, cveData?: CVEData): number {
+  private calculateCommunityScore(githubData?: GitHubData, cveData?: CVEData, downloads?: number, pkgName?: string): number {
     if (!githubData) {
-      return 0.5; // Unknown = slight penalty
+      if (pkgName && this.isWellKnownPackage(pkgName)) return 0;
+      return this.calculatePopularityFallback(downloads);
     }
 
     const { stars, lastPush } = githubData;
@@ -225,6 +229,31 @@ export class RiskCalculator {
     }
 
     return normalized;
+  }
+
+  /**
+   * Helper: is package known/popular (whitelist)
+   */
+  private isWellKnownPackage(name: string): boolean {
+    if (!name) return false;
+    const wellKnown = [
+      'tensorflow','torch','numpy','pandas','scikit-learn','matplotlib','scipy',
+      'requests','django','flask','fastapi','sqlalchemy','pillow','pytest','setuptools',
+      'pip','wheel','jinja2','urllib3','cryptography'
+    ];
+    return wellKnown.includes(name.toLowerCase());
+  }
+
+  /**
+   * Popularity fallback using PyPI downloads when GitHub data missing
+   */
+  private calculatePopularityFallback(downloads?: number): number {
+    if (!downloads || downloads <= 0) return 0.6; // unknown small penalty
+    if (downloads > 100_000_000) return -1.0; // ultra-popular => negative contribution (reduces risk)
+    if (downloads > 10_000_000) return -0.5;
+    if (downloads > 1_000_000) return -0.2;
+    if (downloads > 100_000) return 0; // neutral
+    return 0.5; // small penalty for low-download packages
   }
 
   /**

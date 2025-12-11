@@ -10,13 +10,18 @@ import { CacheManager } from '../../utils/cache/CacheManager';
 interface PyPIPackageInfo {
   info: {
     version: string;
-    author: string;
+    author: string | null;
+    author_email?: string | null;
     maintainer: string;
-    license: string;
+    maintainer_email?: string | null;
+    license: string | null;
     summary: string;
-    home_page: string;
+    home_page: string | null;
     project_url: string;
+    project_urls?: Record<string, string>;
     requires_dist: string[] | null;
+    keywords?: string;
+    classifiers?: string[];
   };
   releases: Record<string, Array<{
     upload_time: string;
@@ -173,15 +178,71 @@ export class PyPIClient {
 
   /**
    * Get package download stats (if available)
-   * Note: PyPI JSON API doesn't provide download counts
-   * Would need to use pypistats.org or BigQuery
-   * @param _packageName - Name of the package
-   * @returns Download count (or null if unavailable)
+   * Tries multiple sources: libraries.io or pypistats.org
+   * Falls back to GitHub stars as an estimation if available
+   * @param packageName - Name of the package
+   * @returns Download count per month or null if unavailable
    */
-  async getDownloadStats(_packageName: string): Promise<number | null> {
-    // Not available in PyPI JSON API
-    // Would need external service like pypistats.org
+  async getDownloadStats(packageName: string): Promise<number | null> {
+    try {
+      // Try libraries.io API first (comprehensive data)
+      const url = `https://libraries.io/api/pypi/${packageName}`;
+      console.log(`[PyPI] Fetching download stats from libraries.io: ${url}`);
+      const resp = await fetch(url);
+      if (resp.ok) {
+        const data = (await resp.json()) as any;
+        if (data && data.downloads) {
+          console.log(`[PyPI] Got downloads from libraries.io: ${data.downloads}`);
+          return Math.floor(data.downloads);
+        }
+      } else {
+        console.warn(`[PyPI] libraries.io returned ${resp.status} for ${packageName}`);
+      }
+    } catch (e) {
+      console.warn(`[PyPI] libraries.io fetch error for ${packageName}:`, (e as Error).message);
+      // ignore, fallback below
+    }
+
+    // Fallback: try pypistats.org JSON API for monthly stats
+    try {
+      const url = `https://pypistats.org/api/packages/${packageName}/recent?period=month&format=json`;
+      console.log(`[PyPI] Fetching download stats from pypistats: ${url}`);
+      const resp = await fetch(url);
+      if (resp.ok) {
+        const data = (await resp.json()) as any;
+        if (data && data.data && data.data.last_month) {
+          console.log(`[PyPI] Got downloads from pypistats: ${data.data.last_month}`);
+          return data.data.last_month;
+        }
+      } else {
+        console.warn(`[PyPI] pypistats returned ${resp.status} for ${packageName}`);
+      }
+    } catch (e) {
+      console.warn(`[PyPI] pypistats fetch error for ${packageName}:`, (e as Error).message);
+      // ignore, no data available
+    }
+
+    console.log(`[PyPI] No download stats available for ${packageName}`);
     return null;
+  }
+
+  /**
+   * Try to get package downloads from PyPI JSON API directly
+   * Note: PyPI JSON API doesn't directly provide downloads
+   * This is a fallback that returns null but can be extended with scraping
+   * @param packageName - Name of the package
+   * @returns Download estimate or null
+   */
+  async getPyPIDirectStats(packageName: string): Promise<number | null> {
+    try {
+      const metadata = await this.getPackageMetadata(packageName);
+      // PyPI JSON API doesn't have download stats, but we can extract from HTML metadata
+      // This would require HTML scraping which is more complex
+      // For now, return null and rely on other sources
+      return null;
+    } catch (e) {
+      return null;
+    }
   }
 
   /**
@@ -257,6 +318,49 @@ export class PyPIClient {
   }
 
   /**
+   * Extract maintainers from author_email or maintainer_email field
+   * Format: "Name <email>, Name <email>"
+   * @param emailField - Author/maintainer email field
+   * @returns Array of maintainer names
+   */
+  extractMaintainers(emailField?: string | null): string[] {
+    if (!emailField) return [];
+    // Parse format: "Name <email>, Name <email>"
+    const maintainers = emailField.split(',').map(part => {
+      const match = part.trim().match(/^(.+?)\s*</);
+      return match ? match[1].trim() : part.trim();
+    }).filter(Boolean);
+    return maintainers;
+  }
+
+  /**
+   * Extract license from PyPI info (handles multiple sources)
+   * @param info - Package info object
+   * @returns License string or null
+   */
+  extractLicense(info: any): string | null {
+    if (info.license && info.license.length > 0) return info.license;
+    
+    const classifiers = info.classifiers || [];
+    const licenseClassifier = classifiers.find((c: string) => c.startsWith('License ::'));
+    if (licenseClassifier) {
+      const parts = licenseClassifier.split('::');
+      return parts[2]?.trim() || null;
+    }
+    return null;
+  }
+
+  /**
+   * Extract GitHub URL from project URLs
+   * @param info - Package info object
+   * @returns GitHub URL or null
+   */
+  getGitHubUrl(info: any): string | null {
+    const projectUrls = info.project_urls || {};
+    return projectUrls.homepage || projectUrls.source || projectUrls['Source Code'] || null;
+  }
+
+  /**
    * Clear cache for a specific package
    * @param packageName - Package to clear
    */
@@ -269,5 +373,72 @@ export class PyPIClient {
    */
   async clearAllCache(): Promise<void> {
     await this.cache.clear();
+  }
+
+  /**
+   * Extract license from classifiers or direct field
+   * @param info - PyPI package info
+   * @returns License string or null
+   */
+  extractLicense(info: PyPIPackageInfo['info']): string | null {
+    // 1. Try direct license field first
+    if (info.license && info.license.trim()) {
+      return info.license;
+    }
+
+    // 2. Try to extract from classifiers
+    const classifiers = info.classifiers || [];
+    
+    // Map of classifier patterns to license names
+    const licenseMap: Record<string, string> = {
+      'License :: OSI Approved :: Apache Software License': 'Apache-2.0',
+      'License :: OSI Approved :: MIT License': 'MIT',
+      'License :: OSI Approved :: GNU General Public License': 'GPL',
+      'License :: OSI Approved :: GNU General Public License v2': 'GPLv2',
+      'License :: OSI Approved :: GNU General Public License v3': 'GPLv3',
+      'License :: OSI Approved :: BSD License': 'BSD',
+      'License :: OSI Approved :: GNU Lesser General Public License': 'LGPL',
+      'License :: OSI Approved :: ISC License': 'ISC',
+      'License :: OSI Approved :: Mozilla Public License 2.0': 'MPL-2.0',
+      'License :: OSI Approved :: Python Software Foundation License': 'PSF',
+    };
+
+    for (const [classifier, license] of Object.entries(licenseMap)) {
+      if (classifiers.includes(classifier)) {
+        return license;
+      }
+    }
+
+    // 3. Try partial match for custom licenses
+    for (const classifier of classifiers) {
+      if (classifier.startsWith('License :: OSI Approved ::')) {
+        const match = classifier.match(/License :: OSI Approved :: (.+)/);
+        if (match) return match[1];
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Get GitHub homepage from project_urls
+   * @param info - PyPI package info
+   * @returns GitHub URL or null
+   */
+  getGitHubUrl(info: PyPIPackageInfo['info']): string | null {
+    // 1. Try home_page first
+    if (info.home_page && info.home_page.includes('github.com')) {
+      return info.home_page;
+    }
+
+    // 2. Try project_urls
+    const projectUrls = info.project_urls || {};
+    for (const [key, url] of Object.entries(projectUrls)) {
+      if (url && url.includes('github.com')) {
+        return url;
+      }
+    }
+
+    return null;
   }
 }

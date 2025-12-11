@@ -10,6 +10,7 @@ import { GitHubClient } from '../api/github_client';
 import { CVEClient } from '../api/cve_client';
 import { RiskCalculator } from '../analysis/RiskCalculator';
 import { Dependency } from '../../types';
+import { AlternativeFinderV2 } from './AlternativeFinderV2';
 
 interface AlternativePackage extends Dependency {
   similarityScore: number;
@@ -25,6 +26,7 @@ export class AlternativeFinder {
   // Simple in-memory cache with TTL
   private cache: Map<string, { ts: number; data: AlternativePackage[] }> = new Map();
   private CACHE_TTL = 1000 * 60 * 60; // 1 hour
+  private v2?: AlternativeFinderV2;
 
   // Metrics
   private metrics = {
@@ -39,6 +41,7 @@ export class AlternativeFinder {
     this.githubClient = new GitHubClient();
     this.cveClient = new CVEClient();
     this.riskCalculator = new RiskCalculator();
+    this.v2 = new AlternativeFinderV2();
     // Try to load cache from localStorage (browser only)
     try {
       const raw = (globalThis as any).localStorage?.getItem('altFinderCache');
@@ -67,6 +70,38 @@ export class AlternativeFinder {
     const start = Date.now();
     this.metrics.queries++;
     const cacheKey = `${packageName}|${JSON.stringify(filters || {})}|${maxResults}`;
+
+    // Feature-flag: prefer V2 (static DB + functional categories). Default: enabled.
+    try {
+      const flag = (globalThis as any).localStorage?.getItem('useAltFinderV2');
+      const useV2 = flag === null || flag === undefined || flag !== 'false';
+      if (useV2 && this.v2) {
+        try {
+          const v2Results = await this.v2.findAlternatives(packageName, maxResults);
+          // Apply simple filters if provided
+          const filtered = v2Results.filter((alt: any) => {
+            if (!filters) return true;
+            if (filters.minSimilarity && (alt.similarityScore || 0) < filters.minSimilarity) return false;
+            if (filters.licensesAllowed && filters.licensesAllowed.length > 0 && !(filters.licensesAllowed as string[]).includes((alt.license || '').toLowerCase())) return false;
+            if (filters.maxAgeDays && alt.lastUpdate) {
+              const ageDays = (Date.now() - new Date(alt.lastUpdate).getTime()) / (1000 * 60 * 60 * 24);
+              if (ageDays > filters.maxAgeDays) return false;
+            }
+            return true;
+          }).slice(0, maxResults);
+
+          this.metrics.totalResponseMs += Date.now() - start;
+          // Cache the result
+          try { this.cache.set(cacheKey, { ts: Date.now(), data: filtered as any }); } catch (e) { /* ignore */ }
+          return filtered as any;
+        } catch (err) {
+          console.warn('AlternativeFinder V2 failed, falling back to V1', err);
+          // continue to V1
+        }
+      }
+    } catch (e) {
+      // ignore localStorage errors and continue with V1
+    }
 
     // Return cached if fresh
     const cached = this.cache.get(cacheKey);

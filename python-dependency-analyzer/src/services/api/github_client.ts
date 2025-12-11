@@ -120,6 +120,8 @@ export class GitHubClient {
         description: (data as any).description || '',
       };
 
+      console.log(`[GitHub] Extracted data: stars=${githubData.stars}, license=${githubData.license}`);
+
       // Cache the result
       await this.cache.set(cacheKey, githubData);
 

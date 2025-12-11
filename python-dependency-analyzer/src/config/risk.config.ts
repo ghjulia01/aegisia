@@ -57,14 +57,14 @@ export const RISK_CONFIG = {
   },
   normalization: {
     min_score: 1,
-    max_score: 5,
-    round_to_integer: true,
+    max_score: 10,
+    round_to_integer: false,
   },
   thresholds: {
-    very_low: { max: 1.5, color: '#22c55e' },
-    low: { max: 2.5, color: '#3b82f6' },
-    moderate: { max: 3.5, color: '#eab308' },
-    high: { max: 4.5, color: '#f97316' },
-    critical: { max: 5, color: '#ef4444' },
+    very_low: { max: 3, color: '#22c55e' },
+    low: { max: 4, color: '#3b82f6' },
+    moderate: { max: 6, color: '#eab308' },
+    high: { max: 8, color: '#f97316' },
+    critical: { max: 10, color: '#ef4444' },
   },
 } as const;

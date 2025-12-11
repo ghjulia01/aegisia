@@ -116,14 +116,31 @@ export const useDependencyAnalysis = () => {
         setStatus(`📦 Fetching PyPI data for ${packageName}...`);
         const pypiData = await pypiClient.getPackageMetadata(packageName);
 
+        // Extract homepage from project_urls if home_page is empty
+        // Extract license and GitHub URL using new PyPIClient methods
+        const license = pypiClient.extractLicense(pypiData.info) || 'Not specified';
+        const homeUrl = pypiClient.getGitHubUrl(pypiData.info) || pypiData.info.home_page || (pypiData.info as any).project_urls?.homepage || pypiData.info.project_url;
+        
+        // Extract maintainers from author_email or maintainer_email
+        const maintainers = pypiClient.extractMaintainers((pypiData.info as any).author_email || (pypiData.info as any).maintainer_email);
+        const maintainerDisplay = maintainers.length > 0 ? maintainers[0] : pypiData.info.author || 'Unknown';
+        const maintainerCount = maintainers.length || (pypiData.info.author ? 1 : 0);
+        
         setStatus(`🔍 Checking GitHub repository...`);
-        const githubData = await githubClient.extractFromHomepage(pypiData.info.home_page || pypiData.info.project_url);
+        const githubData = await githubClient.extractFromHomepage(homeUrl);
 
         setStatus(`🔒 Scanning for vulnerabilities...`);
         const cveData = await cveClient.searchCVEs(packageName).catch(() => ({ details: [] } as any));
 
         setStatus(`🔗 Analyzing dependencies...`);
         const transitiveDeps = await pypiClient.getTransitiveDependencies(packageName).catch(() => []);
+
+        // Fetch downloads stats
+        const downloads = await pypiClient.getDownloadStats(packageName).catch((err) => {
+          console.warn(`[Enrichment] Download stats failed for ${packageName}:`, err);
+          return null;
+        });
+        console.log(`[Enrichment] ${packageName}: downloads=${downloads}, license=${license}, github.stars=${githubData?.stars}`);
 
         const dependency: Dependency = {
           name: packageName,
@@ -132,16 +149,19 @@ export const useDependencyAnalysis = () => {
           country: 'USA',
           openSource: true,
           lastUpdate: pypiData.releases[pypiData.info.version]?.[0]?.upload_time || '',
-          maintainer: pypiData.info.author || pypiData.info.maintainer || 'Unknown',
-          license: pypiData.info.license || 'Not specified',
-          homepage: pypiData.info.home_page || pypiData.info.project_url,
+          maintainer: maintainerDisplay,
+          maintainers: maintainerCount,
+          license: license,
+          homepage: homeUrl,
+          downloads: downloads || undefined,
+          stars: githubData?.stars || undefined,
           pypiData: {
             version: pypiData.info.version,
-            author: pypiData.info.author || '',
-            maintainer: pypiData.info.maintainer || '',
-            license: pypiData.info.license || '',
+            author: pypiData.info.author || maintainerDisplay,
+            maintainer: maintainerDisplay,
+            license: license,
             summary: pypiData.info.summary || '',
-            homeUrl: pypiData.info.home_page || pypiData.info.project_url || '',
+            homeUrl: homeUrl,
             releaseDate: pypiData.releases[pypiData.info.version]?.[0]?.upload_time || '',
           },
           githubData: githubData || undefined,

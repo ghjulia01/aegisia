@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { AlternativeFinder as AlternativeFinderService } from '../../services/analysis/AlternativeFinder';
+import { runDiagnostic } from '../../services/analysis/AlternativeFinderDiagnostic';
 import { useDependencyAnalysis } from '../../hooks/use_dependency_analysis';
 
 export default function PackageAlternative() {
@@ -10,6 +11,8 @@ export default function PackageAlternative() {
   const [maxAgeDays, setMaxAgeDays] = useState<number>(365);
   const [results, setResults] = useState<any[]>([]);
   const [metrics, setMetrics] = useState<any | null>(null);
+  const [diagRunning, setDiagRunning] = useState(false);
+  const [diagResult, setDiagResult] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -90,6 +93,17 @@ export default function PackageAlternative() {
 
         <div className="flex gap-3">
           <button className="px-4 py-2 bg-indigo-600 text-white rounded" onClick={findAlternatives} disabled={loading || !packageName.trim()}>Find Alternatives</button>
+          <button className="px-4 py-2 bg-gray-200 text-gray-800 rounded" onClick={async () => {
+            setDiagRunning(true); setDiagResult(null);
+            try {
+              const r = await runDiagnostic(packageName);
+              setDiagResult(r);
+            } catch (e) {
+              setDiagResult({ error: (e as any)?.message || String(e) });
+            } finally { setDiagRunning(false); }
+          }} disabled={!packageName.trim() || diagRunning}>
+            {diagRunning ? 'Running...' : 'Run Diagnostic'}
+          </button>
         </div>
 
         <p className="text-xs text-gray-500 mt-2">If no results appear, try relaxing filters (lower min similarity, lower min downloads, increase max age) or try a different package name.</p>
@@ -103,6 +117,12 @@ export default function PackageAlternative() {
             No results
             {metrics && (
               <div className="text-xs text-gray-500 mt-2">Metrics: queries={metrics.queries}, cacheHits={metrics.cacheHits}, errors={metrics.errors}</div>
+            )}
+            {diagResult && (
+              <div className="mt-2 text-sm text-gray-700 bg-gray-50 p-2 rounded">
+                <div className="font-medium">Diagnostic summary: {diagResult.overall}</div>
+                <pre className="text-xs overflow-auto max-h-40 mt-2">{JSON.stringify(diagResult, null, 2)}</pre>
+              </div>
             )}
           </div>
         )}

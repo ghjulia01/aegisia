@@ -13,6 +13,7 @@ import type { Dependency } from '@/types';
 interface Props {
   dependencies: Dependency[];
   onRemove?: (index: number) => void;
+  onShowAlternatives?: (packageName: string) => void;
 }
 
 type SortColumn =
@@ -333,9 +334,11 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
                   <div className="text-sm text-gray-900">{dep.type || '-'}</div>
                 </td>
 
-                {/* Maintainer */}
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{dep.maintainer || '-'}</div>
+                {/* Maintainer (truncated to 30 chars) */}
+                <td className="px-6 py-4 whitespace-nowrap max-w-[30ch]">
+                  <div className="text-sm text-gray-900 truncate" title={dep.maintainer || '-'}>
+                    {dep.maintainer ? (dep.maintainer.length > 30 ? `${dep.maintainer.slice(0,30)}…` : dep.maintainer) : '-'}
+                  </div>
                 </td>
 
                 {/* Risk Score */}
@@ -394,13 +397,21 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
 
                 {/* Actions */}
                 {onRemove && (
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm flex gap-2">
                     <button
                       onClick={() => onRemove(index)}
                       className="text-red-600 hover:text-red-900 font-medium transition-colors"
                     >
                       ✕ Supprimer
                     </button>
+                    {typeof onShowAlternatives === 'function' && (
+                      <button
+                        onClick={() => onShowAlternatives(dep.name)}
+                        className="text-indigo-600 hover:text-indigo-900 font-medium transition-colors"
+                      >
+                        🔎 Alternatives
+                      </button>
+                    )}
                   </td>
                 )}
 

@@ -10,16 +10,21 @@ import { useDependencyAnalysis } from '@hooks/use_dependency_analysis';
 import { useLanguage } from '@hooks/use_language_hook';
 import type { Dependency } from '@/types';
 import { DependencyTable } from '../shared/DependencyTable';
+import DependencyGraph from '../DependencyGraph/DependencyGraph';
+import { GraphDataBuilder } from '@/utils/graph/GraphDataBuilder';
+import { useMemo } from 'react';
 
 /**
  * Composant principal d'analyse de dépendances
  */
 export const DependencyAnalyzer: React.FC = () => {
   const [packageInput, setPackageInput] = useState('');
-  const [selectedTab, setSelectedTab] = useState<'table' | 'chart'>('table');
+  const [selectedTab, setSelectedTab] = useState<'table' | 'chart' | 'graph'>('table');
   
   const {
     dependencies,
+    alternatives,
+    dependencyGraph,
     isAnalyzing,
     error,
     progress,
@@ -28,7 +33,24 @@ export const DependencyAnalyzer: React.FC = () => {
     clearResults,
     exportReport,
     removePackage
+  , replaceDependency
   } = useDependencyAnalysis();
+
+  const [filters, setFilters] = useState<{
+    minSimilarity?: number;
+    minDownloads?: number;
+    licensesAllowed?: string[];
+    maxAgeDays?: number;
+  }>({ minSimilarity: 20, minDownloads: 0, licensesAllowed: [], maxAgeDays: 365 });
+  
+  const [selectedPackage, setSelectedPackage] = useState<string | null>(null);
+  const [showAlternativesModal, setShowAlternativesModal] = useState(false);
+
+  const handleShowAlternatives = (pkgName: string) => {
+    setSelectedPackage(pkgName);
+    setShowAlternativesModal(true);
+  };
+  
 
   const { t, currentLanguage, changeLanguage, availableLanguages } = useLanguage();
 
@@ -37,7 +59,7 @@ export const DependencyAnalyzer: React.FC = () => {
    */
   const handleAnalyzeSingle = async () => {
     if (!packageInput.trim()) return;
-    await analyzeDependency(packageInput.trim());
+    await analyzeDependency(packageInput.trim(), filters);
     setPackageInput('');
   };
 
@@ -54,7 +76,7 @@ export const DependencyAnalyzer: React.FC = () => {
     
     if (packages.length === 0) return;
     
-    await analyzeMultipleDependencies(packages);
+    await analyzeMultipleDependencies(packages, filters);
     setPackageInput('');
   };
 
@@ -73,6 +95,15 @@ export const DependencyAnalyzer: React.FC = () => {
   };
 
   const stats = getRiskStats();
+
+  // Memoized graph data for the Graph tab (call hooks at top-level)
+  const graphData = useMemo(() => {
+    try {
+      return GraphDataBuilder.buildFromHookState(dependencies, dependencyGraph || {}, dependencies[0]?.name);
+    } catch (e) {
+      return { nodes: [], links: [] };
+    }
+  }, [dependencies, dependencyGraph]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
@@ -124,23 +155,28 @@ export const DependencyAnalyzer: React.FC = () => {
               />
             </div>
 
+            {/* Alternatives filters removed from Home page; kept in Package Alternative page */}
+
             <div className="flex gap-3">
               <button
-                onClick={handleAnalyzeSingle}
+                onClick={async () => {
+                  // unified analyze: detect multiple packages
+                  if (!packageInput.trim()) return;
+                  const input = packageInput;
+                  setPackageInput('');
+                  const parts = input.split(/[,\n]/).map(p => p.trim()).filter(Boolean);
+                  if (parts.length <= 1) {
+                    await analyzeDependency(parts[0] || input.trim(), filters);
+                  } else {
+                    await analyzeMultipleDependencies(parts, filters);
+                  }
+                }}
                 disabled={isAnalyzing || !packageInput.trim()}
                 className="flex-1 bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
               >
-                {isAnalyzing ? t('analyzing') : t('analyzeSingle')}
+                {isAnalyzing ? t('analyzing') : 'Analyze'}
               </button>
-              
-              <button
-                onClick={handleAnalyzeMultiple}
-                disabled={isAnalyzing || !packageInput.trim()}
-                className="flex-1 bg-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-              >
-                {isAnalyzing ? t('analyzing') : t('analyzeMultiple')}
-              </button>
-              
+
               {dependencies.length > 0 && (
                 <button
                   onClick={clearResults}
@@ -236,6 +272,17 @@ export const DependencyAnalyzer: React.FC = () => {
                 >
                   {t('chartView')}
                 </button>
+
+                <button
+                  onClick={() => setSelectedTab('graph')}
+                  className={`px-6 py-2 rounded-t-lg font-medium transition-colors ${
+                    selectedTab === 'graph'
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  Graph
+                </button>
               </div>
 
               {/* Export Button */}
@@ -249,12 +296,16 @@ export const DependencyAnalyzer: React.FC = () => {
 
             {/* Table View */}
             {selectedTab === 'table' && (
-              <DependencyTable dependencies={dependencies} onRemove={removePackage} />
+              <DependencyTable dependencies={dependencies} onRemove={removePackage} onShowAlternatives={handleShowAlternatives} />
             )}
 
             {/* Chart View */}
             {selectedTab === 'chart' && (
               <RiskChart dependencies={dependencies} t={t} />
+            )}
+
+            {selectedTab === 'graph' && (
+              <DependencyGraph data={graphData} />
             )}
           </div>
         )}
@@ -273,6 +324,52 @@ export const DependencyAnalyzer: React.FC = () => {
             <p className="text-gray-500">
               {t('noResultsDescription')}
             </p>
+          </div>
+        )}
+
+        {/* Alternatives Modal */}
+        {showAlternativesModal && selectedPackage && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+            <div className="bg-white rounded-lg shadow-lg w-11/12 md:w-2/3 p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-bold">Alternatives pour {selectedPackage}</h3>
+                <button onClick={() => setShowAlternativesModal(false)} className="text-gray-600">✕</button>
+              </div>
+              <div className="space-y-3 max-h-80 overflow-auto">
+                {(alternatives[selectedPackage] && alternatives[selectedPackage].length > 0) ? (
+                  alternatives[selectedPackage].map((alt: any) => (
+                    <div key={alt.name} className="p-3 border rounded-md">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="font-medium text-gray-900">{alt.name} <span className="text-sm text-gray-500">{alt.version}</span></div>
+                          <div className="text-sm text-gray-600">{alt.reasons?.join(' • ')}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm">Risque: {alt.riskScore?.toFixed?.(1) ?? alt.riskScore}</div>
+                          <div className="text-sm">Sim: {alt.similarityScore}</div>
+                        </div>
+                      </div>
+                      <div className="mt-3 flex gap-2">
+                        <button
+                          onClick={() => { navigator.clipboard?.writeText(alt.name); }}
+                          className="px-3 py-1 bg-gray-100 rounded hover:bg-gray-200 text-sm"
+                        >
+                          Copier
+                        </button>
+                        <button
+                          onClick={async () => { await replaceDependency(selectedPackage as string, alt.name, filters); setShowAlternativesModal(false); }}
+                          className="px-3 py-1 bg-green-100 rounded hover:bg-green-200 text-sm"
+                        >
+                          Remplacer
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-gray-600">Aucune alternative trouvée pour le moment.</div>
+                )}
+              </div>
+            </div>
           </div>
         )}
 

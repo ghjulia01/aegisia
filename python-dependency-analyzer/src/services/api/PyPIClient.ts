@@ -152,10 +152,23 @@ export class PyPIClient {
    * @returns Array of package names
    */
   async searchPackages(_keyword: string): Promise<string[]> {
-    // PyPI doesn't provide a good search API
-    // This would need to be implemented with a scraper or use warehouse API
-    console.warn('[PyPI] Search API not implemented');
-    return [];
+    const keyword = (_keyword || '').trim();
+    if (!keyword) return [];
+    try {
+      // Best-effort: use libraries.io public search for PyPI packages
+      const q = encodeURIComponent(keyword);
+      const url = `https://libraries.io/api/search?q=${q}&platforms=pypi&per_page=20`;
+      const resp = await fetch(url);
+      if (!resp.ok) {
+        console.warn('[PyPI] libraries.io search returned', resp.status);
+        return [];
+      }
+      const data = await resp.json();
+      return (data || []).map((d: any) => d.name).filter(Boolean);
+    } catch (e) {
+      console.warn('[PyPI] searchPackages fallback failed', e);
+      return [];
+    }
   }
 
   /**

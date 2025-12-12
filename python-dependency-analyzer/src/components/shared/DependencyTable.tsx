@@ -286,6 +286,28 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
               </div>
             </th>
 
+            {/* SUPPLY CHAIN RISK - MOVED AFTER OPERATIONAL */}
+            <th
+              onClick={() => handleSort('supplyChainRisk')}
+              className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+            >
+              <div className="flex items-center gap-1">
+                <span>🔗 Supply Chain</span>
+                <SortIcon column="supplyChainRisk" />
+              </div>
+            </th>
+
+            {/* COMPLIANCE RISK */}
+            <th
+              onClick={() => handleSort('complianceRisk')}
+              className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+            >
+              <div className="flex items-center gap-1">
+                <span>📜 Compliance</span>
+                <SortIcon column="complianceRisk" />
+              </div>
+            </th>
+
             {/* COMPLIANCE CAPABILITIES (4 colonnes) */}
             <th className="px-3 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider bg-purple-50">
               ✅ Use
@@ -298,17 +320,6 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
             </th>
             <th className="px-3 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider bg-purple-50">
               ☁️ SaaS
-            </th>
-
-            {/* SUPPLY CHAIN RISK */}
-            <th
-              onClick={() => handleSort('supplyChainRisk')}
-              className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
-            >
-              <div className="flex items-center gap-1">
-                <span>🔗 Supply Chain</span>
-                <SortIcon column="supplyChainRisk" />
-              </div>
             </th>
 
             {/* RISK RADAR DETAIL (action button) */}
@@ -454,6 +465,24 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
                   ) : <span className="text-xs text-gray-400">-</span>}
                 </td>
 
+                {/* SUPPLY CHAIN RISK - MOVED AFTER OPERATIONAL */}
+                <td className="px-4 py-4 whitespace-nowrap">
+                  {dep.riskBreakdown ? (
+                    <span className={`px-2 py-1 text-xs font-medium rounded ${getRiskColor(dep.riskBreakdown.supplyChain)}`}>
+                      {dep.riskBreakdown.supplyChain.toFixed(1)}
+                    </span>
+                  ) : <span className="text-xs text-gray-400">-</span>}
+                </td>
+
+                {/* COMPLIANCE RISK */}
+                <td className="px-4 py-4 whitespace-nowrap">
+                  {dep.riskBreakdown ? (
+                    <span className={`px-2 py-1 text-xs font-medium rounded ${getRiskColor(dep.riskBreakdown.compliance)}`}>
+                      {dep.riskBreakdown.compliance.toFixed(1)}
+                    </span>
+                  ) : <span className="text-xs text-gray-400">-</span>}
+                </td>
+
                 {/* COMPLIANCE CAPABILITIES (4 colonnes) */}
                 <td className="px-3 py-4 whitespace-nowrap text-center bg-purple-50">
                   {licenseService.getCapabilityIconEnhanced(licenseService.canUse(dep.license))}
@@ -466,15 +495,6 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
                 </td>
                 <td className="px-3 py-4 whitespace-nowrap text-center bg-purple-50">
                   {licenseService.getCapabilityIconEnhanced(licenseService.canUseSaaS(dep.license))}
-                </td>
-
-                {/* SUPPLY CHAIN RISK */}
-                <td className="px-4 py-4 whitespace-nowrap">
-                  {dep.riskBreakdown ? (
-                    <span className={`px-2 py-1 text-xs font-medium rounded ${getRiskColor(dep.riskBreakdown.supplyChain)}`}>
-                      {dep.riskBreakdown.supplyChain.toFixed(1)}
-                    </span>
-                  ) : <span className="text-xs text-gray-400">-</span>}
                 </td>
 
                 {/* RISK RADAR DETAIL (action button) */}
@@ -573,6 +593,11 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
         <div className="text-sm text-gray-600">
           <strong>{dependencies.length}</strong> package{dependencies.length > 1 ? 's' : ''} •{' '}
           Trié par <strong>{sortColumn}</strong> ({sortDirection === 'asc' ? 'croissant' : 'décroissant'})
+        </div>
+        <div className="mt-2 text-xs text-gray-500 bg-blue-50 border border-blue-200 rounded p-2">
+          📊 <strong>Pondération Global Risk:</strong> Security ×5, Operational ×3, Supply Chain ×1, Compliance ×1 (total=10)
+          <br />
+          📁 <strong>Fichier:</strong> <code className="bg-white px-1 rounded">src/services/analysis/MultiDimensionalRiskCalculator.ts</code>
         </div>
       </div>
 

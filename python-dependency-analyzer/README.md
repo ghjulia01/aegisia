@@ -69,18 +69,29 @@ Contrairement aux systèmes traditionnels qui fournissent un score unique, notre
 ┌─────────────────────────────────────────────────────────┐
 │                    RISK BREAKDOWN                        │
 ├─────────────────────────────────────────────────────────┤
-│  🔒 Security          ⚙️ Operational                    │
+│  🔒 Security (×5)     ⚙️ Operational (×3)               │
 │     - CVE Count           - Maintenance Status           │
 │     - Critical CVEs       - Community Size               │
 │     - Known Vulns         - Bus Factor                   │
 │                           - Days Since Update            │
 │                                                           │
-│  ⚖️ Compliance        🔗 Supply Chain                   │
-│     - License Type        - Direct Dependencies          │
-│     - Legal Category      - Transitive Dependencies      │
-│     - Compatibility       - Depth Level                  │
+│  🔗 Supply Chain (×1) 📜 Compliance (×1)                │
+│     - Direct Deps         - Use Permission               │
+│     - Transitive Deps     - Modify Permission            │
+│     - Depth Level         - Sell Permission              │
+│                           - SaaS Permission              │
+│                           - Obligations                  │
 └─────────────────────────────────────────────────────────┘
+
+Overall Risk = Security×0.5 + Operational×0.3 + SupplyChain×0.1 + Compliance×0.1
 ```
+
+**Pondération Global Risk** (configurable dans `src/services/analysis/MultiDimensionalRiskCalculator.ts`):
+- **Security**: ×5 (50% du score total)
+- **Operational**: ×3 (30% du score total)
+- **Supply Chain**: ×1 (10% du score total)
+- **Compliance**: ×1 (10% du score total)
+- **Total**: 10 points
 
 ### 🔒 Dimension Security
 
@@ -121,17 +132,43 @@ Contrairement aux systèmes traditionnels qui fournissent un score unique, notre
 
 **Objectif**: Assurer la conformité légale et la compatibilité des licences
 
-**Catégories de licences**:
-- **Permissive** (`MIT`, `Apache-2.0`, `BSD`, `ISC`) → Score: **2.0**
-- **Copyleft Weak** (`LGPL`, `MPL`, `EPL`) → Score: **3.0-4.0**
-- **Copyleft Strong** (`GPL`, `AGPL`) → Score: **4.5-5.0**
-- **Proprietary** (`Commercial`, `Closed Source`) → Score: **7.0+**
-- **Unknown** (non spécifiée) → Score: **6.0**
+**Nouveau système de notation (v2.0)** - Basé sur les capabilities et obligations:
+
+**Calcul du score**:
+- ✅ **Toutes permissions + aucune obligation**: `0/10` (parfait - ex: MIT, Apache-2.0)
+- ✅ **Toutes permissions + obligations**: `2/10` (restrictions mineures)
+- ⚠️ **Use + Modify + Sell (pas SaaS)**: `2-3/10` selon obligations
+- ⚠️ **Use + Modify seulement**: `4-5/10` selon obligations
+- ⚠️ **Use seulement (sans obligations)**: `6/10` (restrictions significatives)
+- 🚫 **Use seulement + obligations**: `8/10` (restrictions majeures - ex: lecture seule avec attribution)
+- ⛔ **Aucune permission d'usage**: `10/10` (blocker critique)
+- ⛔ **Network Copyleft (AGPL)**: `7/10` minimum (divulgation requise même pour SaaS)
+
+**Permissions évaluées** (Use, Modify, Sell, SaaS):
+- **Use**: Droit d'utiliser le logiciel
+- **Modify**: Droit de modifier le code source
+- **Sell**: Droit de vendre des produits dérivés
+- **SaaS**: Droit d'utiliser dans un service cloud
+
+**Obligations vérifiées**:
+- **Attribution**: Mention des auteurs originaux
+- **Disclose Source**: Divulgation du code source
+- **Share-Alike**: Redistribution sous même licence
+- **Network Copyleft**: Divulgation même pour usage réseau (AGPL)
+
+**Base de données de licenses** (`src/config/licenses.json`):
+- 20+ licenses SPDX standards (MIT, Apache-2.0, GPL-3.0, AGPL-3.0, BSD-3-Clause, etc.)
+- Capabilities complètes (use, modify, sell, saas, distribute, copy, private_use)
+- Obligations détaillées (attribution, share_alike, network_copyleft, etc.)
+- Notes explicatives en français et anglais
+- Gestion des licenses ambiguës (BSD sans version, Apache sans version)
 
 **Extraction intelligente**:
+- Parse `license_expression` depuis PyPI (via license-expression Python)
+- Utilise `info.license` comme fallback
 - Parse les classifiers PyPI (`License :: OSI Approved :: MIT License`)
-- Mapping automatique vers les noms standards
-- Détection des licences incompatibles
+- Mapping automatique vers SPDX via aliases
+- Normalisation (minuscules, tirets, espaces)
 
 ### 🔗 Dimension Supply Chain
 
@@ -163,19 +200,29 @@ Tableau principal avec toutes les informations critiques:
 - 🌍 **Pays**
 - 📦 **Type** (import | package)
 - 👤 **Mainteneur** (premier nom)
-- ⚠️ **Risque** (score legacy 0-10)
-- 📊 **Détails Risque** (4 dimensions + bouton "View Details")
+- ⚠️ **Global Risk** (score 0-10 avec pondération Security×5, Operational×3, SupplyChain×1, Compliance×1)
+- 🔒 **Security** (score 0-10)
+- ⚙️ **Operational** (score 0-10)
+- 🔗 **Supply Chain** (score 0-10)
+- 📜 **Compliance** (score 0-10)
+- ✅ **Use** (permission d'utilisation)
+- ✏️ **Modify** (permission de modification)
+- 💰 **Sell** (permission de vente)
+- ☁️ **SaaS** (permission d'usage cloud)
+- 📊 **Risk Radar** (bouton "Voir Détails" pour modal complète)
 - 🔒 **CVE** (nombre de vulnérabilités)
 - 🕐 **MAJ** (dernière mise à jour)
 - ⬇️ **Downloads** (mensuel)
 - ⭐ **Stars** (GitHub)
-- ⚖️ **Licence**
+- ⚖️ **Licence** (nom SPDX ou texte complet)
 
 **Fonctionnalités**:
-- Tri interactif sur toutes les colonnes
-- Code couleur pour les niveaux de risque
+- Tri interactif sur toutes les colonnes numériques
+- Code couleur pour les niveaux de risque (vert < 4, jaune 4-6, orange 6-8, rouge > 8)
 - Icônes emoji pour visualisation rapide
-- Filtres et recherche (à venir)
+- Note explicative en bas de table avec pondération et chemin du fichier
+- Compliance capabilities en colonnes visuelles (✅/❌)
+- Navigation fluide avec Context Provider (état partagé entre pages)
 
 ### RiskRadarChart
 
@@ -193,12 +240,13 @@ Graphique radar SVG interactif:
 Modale complète avec analyse détaillée:
 
 **Sections**:
-1. **Radar Chart** (visualisation graphique)
+1. **Radar Chart** (visualisation graphique 4 dimensions avec note explicative sur pondération)
 2. **Risk Details** (breakdown par dimension avec concerns)
-3. **Package Information** (version, license, maintainers, stars, downloads)
+3. **Package Information** (version, license limitée à 600 caractères avec lien, maintainers, stars, downloads)
 4. **Security Analysis** (total CVEs, critical CVEs, known vulnerabilities)
 5. **Operational Analysis** (days since update, maintenance frequency, community size, bus factor)
 6. **Supply Chain Analysis** (direct/transitive dependencies, depth level)
+7. **License & Compliance** (capabilities et obligations détaillées, notes limitées à 100 caractères avec lien SPDX)
 
 ### RiskBreakdownDisplay
 
@@ -259,17 +307,89 @@ archived: boolean               // Statut du repository
 
 #### CVEClient (`src/services/api/cve_client.ts`)
 
-Scan des vulnérabilités CVE:
+**Migration vers OSV.dev** (Open Source Vulnerabilities):
 
 ```typescript
-// Recherche CIRCL CVE API
-searchCVEs(packageName: string)
+// Nouvelle API OSV.dev (gratuite, sans rate limit)
+searchCVEs(packageName: string, ecosystem: 'PyPI')
   → { count, critical, details[] }
 ```
 
-#### MultiDimensionalRiskCalculator (`src/services/analysis/MultiDimensionalRiskCalculator.ts`)
+**Avantages OSV.dev**:
+- ✅ Base de données unifiée (GitHub Advisory, NVD, PyPI Advisory, etc.)
+- ✅ API gratuite sans authentification
+- ✅ Pas de rate limiting strict
+- ✅ Mises à jour en temps réel
+- ✅ Support natif de PyPI (pas besoin de mapping de noms)
+- ✅ Format JSON standardisé avec scores CVSS
 
-Calculateur principal avec toutes les améliorations:
+**Endpoint**: `https://api.osv.dev/v1/query`
+
+**Exemple de requête**:
+```json
+{
+  "package": {
+    "name": "pillow",
+    "ecosystem": "PyPI"
+  }
+}
+```
+
+**Données récupérées**:
+- ID de la vulnérabilité (GHSA-*, CVE-*, PYSEC-*)
+- Résumé et description détaillée
+- Versions affectées
+- Scores de sévérité (CVSS v3)
+- Dates de publication et modification
+- Références et patches disponibles
+
+#### AlternativeRecommender (`src/services/analysis/AlternativeRecommender.ts`)
+
+**Nouveau système intelligent de recommandation d'alternatives** (v2.0):
+
+```typescript
+// Profiling sémantique + scoring multi-critères
+findAlternatives(packageName: string, pypiData, githubData)
+  → AlternativeRecommendation {
+      original: PackageProfile,
+      alternatives: AlternativePackage[],
+      buckets: {
+        'best-overall': AlternativePackage[],
+        'performance': AlternativePackage[],
+        'lightweight': AlternativePackage[],
+        'specialized': AlternativePackage[],
+        'similar': AlternativePackage[]
+      }
+    }
+```
+
+**Profiling fonctionnel** (`PackageProfiler`):
+- Extraction de keywords (nom du package, topics GitHub, classifiers PyPI)
+- Identification des domaines (web, data, ml, database, testing, etc.)
+- Inférence de l'intent (framework, library, tool, utility, etc.)
+- Analyse sémantique du README et description
+
+**Scoring multi-critères**:
+- **Similarité fonctionnelle** (40%) - Domaines partagés, keywords communs, intent match
+- **Popularité** (20%) - GitHub stars, PyPI downloads
+- **Maintenance** (20%) - Activité récente, fréquence de release
+- **Sécurité** (10%) - Absence de CVE, qualité du code
+- **Compatibilité de license** (10%) - Permissivité similaire
+
+**Catégorisation par buckets**:
+- **⭐ Best Overall** (score global > 80)
+- **🚀 Performance** (optimisé pour la vitesse, keywords: fast, performance, optimized)
+- **🪶 Lightweight** (minimal dependencies, small footprint)
+- **🎯 Specialized** (niche use-case, domaine spécifique)
+- **🔄 Similar** (alternatives fonctionnellement équivalentes)
+
+**Base d'alternatives connues** (20+ packages populaires):
+- `pillow` → opencv-python, scikit-image, imageio, wand, pillow-simd
+- `requests` → httpx, aiohttp, urllib3
+- `pandas` → polars, dask, modin
+- `numpy` → jax, cupy
+- `flask` → fastapi, starlette, falcon
+- Et plus encore...
 
 **Caractéristiques**:
 - ✅ Score optimiste (base 3.0)
@@ -279,6 +399,31 @@ Calculateur principal avec toutes les améliorations:
 - ✅ Bonus de maturité
 - ✅ Modificateurs contextuels (runtime/dev/test)
 
+#### MultiDimensionalRiskCalculator (`src/services/analysis/MultiDimensionalRiskCalculator.ts`)
+
+Calculateur principal avec toutes les améliorations:
+
+**Caractéristiques**:
+- ✅ Score optimiste (base 3.0)
+- ✅ Fallback PyPI downloads
+- ✅ Poids configurables (Security ×5, Operational ×3, SupplyChain ×1, Compliance ×1)
+- ✅ Liste étendue de packages bien connus (50+)
+- ✅ Bonus de maturité
+- ✅ Modificateurs contextuels (runtime/dev/test)
+- ✅ Nouveau système Compliance basé sur capabilities + obligations
+
+**Méthode publique pour affichage des poids**:
+```typescript
+getWeights(): Record<string, number> {
+  return {
+    security: 5,
+    operational: 3,
+    supplyChain: 1,
+    compliance: 1,
+  };
+}
+```
+
 **Packages bien connus reconnus**:
 - **ML/AI**: tensorflow, torch, keras, transformers, scikit-learn, xgboost, lightgbm, spacy, nltk
 - **Data Science**: numpy, pandas, scipy, matplotlib, seaborn, plotly
@@ -287,6 +432,27 @@ Calculateur principal avec toutes les améliorations:
 - **Database**: sqlalchemy, psycopg2, pymongo, redis
 - **Networking**: requests, urllib3, httpx
 - **Et 30+ autres packages courants**
+
+#### LicenseService (`src/services/compliance/LicenseService.ts`)
+
+**Nouveau service de gestion des licenses** (v2.0):
+
+```typescript
+// Méthodes principales
+normalizeLicense(rawLicense: string): string  // Normalisation vers SPDX
+getLicenseInfo(rawLicense: string): LicenseInfo  // Infos complètes
+getCapabilities(rawLicense: string): LicenseCapabilities  // Permissions
+getObligations(rawLicense: string): LicenseObligations  // Obligations
+canUse/canModify/canSell/canUseSaaS(rawLicense: string): boolean
+getRiskLevel(rawLicense: string): 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
+```
+
+**Base de données** (`src/config/licenses.json`):
+- 20+ licenses SPDX (MIT, Apache-2.0, GPL-3.0, AGPL-3.0, BSD-3-Clause, LGPL-3.0, MPL-2.0, etc.)
+- Capabilities: use, copy, modify, distribute, sell, saas, private_use
+- Obligations: attribution, include_license, disclose_source, share_alike, network_copyleft, etc.
+- Alias mapping (ex: "BSD" → "BSD-3-Clause", "Apache" → "Apache-2.0")
+- Notes explicatives bilingues (FR/EN)
 
 ### Proxy Configuration
 
@@ -404,27 +570,35 @@ npm run validate         # Lint + TypeCheck + Tests
 python-dependency-analyzer/
 ├── src/
 │   ├── components/              # Composants React
-│   │   ├── DependencyAnalyzer/      # Composant principal
+│   │   ├── DependencyAnalyzer/      # Composant principal (Home)
+│   │   ├── PackageAnalysis/         # Analyse individuelle de packages
+│   │   ├── PackageAlternative/      # Recherche d'alternatives avec profiling
 │   │   ├── shared/                  # Composants réutilisables
-│   │   │   └── DependencyTable.tsx  # Table enrichie avec risk breakdown
-│   │   ├── RiskRadarChart/          # Graphique radar SVG
-│   │   ├── RiskDetailsModal/        # Modale détails de risque
+│   │   │   ├── DependencyTable.tsx  # Table enrichie (Security, Operational, Supply Chain, Compliance + capabilities)
+│   │   │   └── ComplianceTable.tsx  # Table détaillée licenses avec capabilities/obligations
+│   │   ├── RiskRadarChart/          # Graphique radar SVG (4 dimensions + note pondération)
+│   │   ├── RiskDetailsModal/        # Modale détails de risque (license tronquée 600 chars)
 │   │   └── RiskBreakdownDisplay/    # Affichage compact/détaillé
 │   │
 │   ├── services/                # Logique métier
 │   │   ├── api/                     # Clients API
 │   │   │   ├── PyPIClient.ts        # PyPI JSON API
 │   │   │   ├── github_client.ts     # GitHub API
-│   │   │   └── cve_client.ts        # CIRCL CVE API
+│   │   │   └── cve_client.ts        # OSV.dev API (migration de CIRCL)
 │   │   ├── analysis/                # Calculateurs de risque
 │   │   │   ├── RiskCalculator.ts    # Legacy (simple score)
-│   │   │   ├── MultiDimensionalRiskCalculator.ts  # Nouveau (4D)
-│   │   │   └── AlternativeFinder.ts # Recherche d'alternatives
+│   │   │   ├── MultiDimensionalRiskCalculator.ts  # Nouveau (4D + compliance capabilities)
+│   │   │   ├── AlternativeRecommender.ts  # Recommandations intelligentes (profiling + scoring)
+│   │   │   └── PackageProfiler.ts   # Extraction identité fonctionnelle
 │   │   ├── compliance/              # Conformité légale
+│   │   │   └── LicenseService.ts    # Gestion licenses (capabilities + obligations)
 │   │   └── export/                  # Export JSON/CSV
 │   │
 │   ├── hooks/                   # React Hooks
 │   │   └── use_dependency_analysis.ts  # Hook principal d'analyse
+│   │
+│   ├── contexts/                # React Context
+│   │   └── DependencyContext.tsx    # Context Provider (état partagé entre pages)
 │   │
 │   ├── types/                   # Types TypeScript
 │   │   ├── Dependency.ts            # Type Dependency
@@ -439,6 +613,7 @@ python-dependency-analyzer/
 │   ├── config/                  # Configuration
 │   │   ├── risk.config.ts           # Seuils de risque
 │   │   ├── api.config.ts            # URLs API
+│   │   ├── licenses.json            # Base de données licenses SPDX (20+)
 │   │   └── compliance.config.ts     # Règles conformité
 │   │
 │   └── main.tsx                 # Point d'entrée React
@@ -489,47 +664,28 @@ VITE_GITHUB_TOKEN=ghp_your_token_here
 - Sans token: 60 requêtes/heure
 - Avec token: 5000 requêtes/heure
 
-### CVE Database (CIRCL + NVD) - IMPROVED v1.1
+### CVE Database (OSV.dev) - v2.0
 
-**Sources multiples**:
-- **CIRCL CVE API**: `https://cve.circl.lu/api/search/{product}` (primaire, gratuit)
-- **NVD API**: `https://services.nvd.nist.gov/rest/json/cves/2.0` (secondaire, plus complet)
+**Migration de CIRCL vers OSV.dev**:
+- **Endpoint**: `https://api.osv.dev/v1/query`
+- **Format**: POST avec `{"package": {"name": "pillow", "ecosystem": "PyPI"}}`
+- **Avantages**: Base unifiée, gratuite, sans rate limit, support natif PyPI
 
-**Améliorations de détection**:
-1. **Mapping automatique de noms**: 20+ packages Python courants
-2. **Recherche multi-variantes**: teste minuscule, majuscule, avec préfixe python-
-3. **Déduplication intelligente**: fusionne les résultats CIRCL + NVD
-4. **Logs détaillés**: affiche toutes les variantes testées en console
+**Exemple de détection** (Pillow):
+```
+[CVE/OSV] Querying for pillow in PyPI ecosystem
+[CVE/OSV] ✅ Found 111 vulnerabilities
+  - GHSA-xxxx-yyyy-zzzz (critical)
+  - CVE-2025-48374 (high)
+  - PYSEC-2024-123 (medium)
+```
 
 **Données récupérées**:
-- Liste des CVE connues
-- Scores CVSS (v2 et v3.1)
-- Descriptions détaillées
-- Dates de publication/modification
-
-**Exemple de recherche pour "pillow"**:
-```
-[CVE] Searching variants for pillow: ["pillow", "python-pillow", "pil"]
-[CVE/CIRCL] Trying: https://cve.circl.lu/api/search/pillow
-[CVE/NVD] Trying: pillow
-[CVE] Found 1 CVEs for pillow (0 critical)
-```
-
-**Configuration**:
-```env
-VITE_CVE_API_URL=https://cve.circl.lu/api
-VITE_NVD_API_KEY=optional_but_recommended
-```
-
-**Rate limiting**:
-- CIRCL: Pas de limite stricte, respecté via cache (15 min TTL)
-- NVD sans clé: 5 requêtes/30 secondes (6 secondes entre requêtes)
-- NVD avec clé: 50 requêtes/30 secondes (0.6 secondes entre requêtes)
-
-**Notes importantes**:
-- ⚠️ Les bases CVE peuvent avoir un délai de quelques jours pour les nouvelles vulnérabilités
-- ✅ La recherche multi-sources réduit drastiquement les faux négatifs
-- ✅ Le cache de 15 minutes évite de surcharger les APIs tout en restant à jour
+- ID de vulnérabilité (GHSA-*, CVE-*, PYSEC-*)
+- Résumé et description
+- Scores CVSS v3
+- Versions affectées
+- Références et patches
 
 ### Libraries.io (via proxy)
 
@@ -561,7 +717,7 @@ Créer un fichier `.env` à la racine:
 # API Endpoints
 VITE_PYPI_API_URL=https://pypi.org/pypi
 VITE_GITHUB_API_URL=https://api.github.com
-VITE_CVE_API_URL=https://cve.circl.lu/api
+VITE_CVE_API_URL=https://api.osv.dev/v1  # Migration OSV.dev
 
 # GitHub Token (optionnel mais recommandé)
 VITE_GITHUB_TOKEN=ghp_your_personal_access_token
@@ -680,31 +836,21 @@ Exemples de packages à tester:
 
 ## 🐛 Troubleshooting
 
-### Problème: CVE non détectées (IMPORTANT ⚠️)
+### Problème: CVE non détectées
 
-**Symptôme**: Des packages connus pour avoir des CVE affichent "0 CVE" (ex: pillow avec CVE-2025-48374)
+**Solution v2.0**: Migration vers OSV.dev élimine les problèmes de mapping de noms
 
-**Cause**: Le système CVE utilise parfois des noms de produits différents du nom PyPI. Par exemple, "pillow" peut être référencé comme "Pillow", "python-pillow", ou "pil" dans les bases CVE.
+✅ **Avantages OSV.dev**:
+- Support natif de l'écosystème PyPI
+- Pas besoin de variantes de noms (pillow vs python-pillow)
+- Base de données unifiée (GitHub Advisory + NVD + PyPI Advisory)
+- Mises à jour en temps réel
 
-**Solution améliorée (v1.1)**:
-- ✅ Détection multi-sources (CIRCL + NVD API)
-- ✅ Mapping automatique des noms (50+ packages courants)
-- ✅ Recherche par variantes (minuscule, majuscule, avec/sans préfixe python-)
-- ✅ Déduplication intelligente des résultats
-
-**Action immédiate**:
+**Vider le cache si nécessaire**:
 ```javascript
-// Vider le cache CVE dans la console du navigateur
 localStorage.removeItem('cache_cve');
-// Puis recharger la page et réanalyser
+// Puis recharger la page
 ```
-
-**Packages avec mapping automatique**:
-- pillow → ["pillow", "python-pillow", "pil"]
-- django → ["django", "python-django"]
-- requests → ["requests", "python-requests"]
-- numpy → ["numpy", "python-numpy"]
-- Et 15+ autres packages courants
 
 ### Problème: CORS errors
 
@@ -714,16 +860,18 @@ localStorage.removeItem('cache_cve');
 
 **Solution**: Ajouter un `VITE_GITHUB_TOKEN` dans `.env`
 
-### Problème: Rate limiting NVD API
+### Problème: Licence text trop long dans modal
 
-**Symptôme**: Délais importants lors de l'analyse (6 secondes entre requêtes)
+**Solution implémentée (v2.0)**:
+- License dans "Package Information": limitée à 600 caractères avec lien vers section détaillée
+- License dans "License & Compliance": notes limitées à 100 caractères avec lien SPDX.org
 
-**Cause**: L'API NVD impose un rate limit de 5 requêtes/30 secondes sans clé API
+### Problème: Alternatives ne s'affichent pas
 
-**Solution**: 
-1. Obtenir une clé API NVD gratuite sur https://nvd.nist.gov/developers/request-an-api-key
-2. Ajouter dans `.env`: `VITE_NVD_API_KEY=your_key_here`
-3. Avec clé: 50 requêtes/30 secondes
+**Solution (v2.0)**: Utilisation du Context Provider pour partager l'état entre pages
+- Navigation entre Home → Package Alternative préserve maintenant les données
+- Bouton "Remplacer" fonctionne correctement
+- État global partagé via `DependencyContext`
 
 ### Problème: Cache stale
 
@@ -745,27 +893,6 @@ rm -rf node_modules dist
 npm install
 npm run build
 ```
-
-### Problème: False negatives (0 CVE pour package vulnérable)
-
-**Diagnostic**:
-1. Ouvrir la console navigateur (F12)
-2. Chercher les logs `[CVE]` pour voir les variantes testées
-3. Vérifier si le package est dans `CVE_NAME_MAPPING`
-
-**Solution temporaire**:
-```typescript
-// Ajouter le mapping dans src/services/api/cve_client.ts
-const CVE_NAME_MAPPING: Record<string, string[]> = {
-  'votre-package': ['variant1', 'variant2', 'vendor/product'],
-  // ...
-};
-```
-
-**Solution permanente**: Ouvrir une issue sur GitHub avec:
-- Nom du package
-- CVE connue
-- Nom du produit dans la base CVE
 
 ---
 
@@ -807,12 +934,24 @@ SOFTWARE.
 ## 🙏 Remerciements
 
 - **PyPI** pour l'API publique
-- **CIRCL** pour la base CVE gratuite
-
-
+- **OSV.dev** (Google) pour la base de vulnérabilités unifiée et gratuite
+- **GitHub** pour l'API et les métriques de repositories
+- **SPDX** pour les standards de licenses
 
 ---
 
-**Version**: 1.0.0  
+**Version**: 2.0.0  
 **Last Updated**: December 12, 2025  
 **Status**: ✅ Production Ready
+
+**Changelog v2.0**:
+- ✅ Migration CVE vers OSV.dev (de CIRCL)
+- ✅ Nouveau système de notation Compliance (capabilities + obligations)
+- ✅ Base de données licenses SPDX (licenses.json)
+- ✅ Nouveaux poids Global Risk (Security ×5, Operational ×3, SupplyChain ×1, Compliance ×1)
+- ✅ Système d'alternatives intelligent avec profiling sémantique
+- ✅ Context Provider pour état partagé entre pages
+- ✅ Colonne Compliance visible dans la table
+- ✅ Notes explicatives sur pondération (table + radar)
+- ✅ Truncation intelligente des textes longs (600 chars license, 100 chars notes)
+- ✅ 4 colonnes capabilities visuelles (Use/Modify/Sell/SaaS)

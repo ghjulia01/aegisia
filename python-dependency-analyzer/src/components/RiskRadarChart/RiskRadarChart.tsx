@@ -158,6 +158,15 @@ export const RiskRadarChart: React.FC<RiskRadarChartProps> = ({
           {riskBreakdown.riskLevel}
         </div>
       </div>
+      
+      {/* Weights info */}
+      <div className="mt-3 text-xs text-gray-500 bg-blue-50 border border-blue-200 rounded px-3 py-2 max-w-sm">
+        <div className="font-semibold text-gray-700 mb-1">📊 Pondération:</div>
+        Security ×5, Operational ×3, Supply Chain ×1, Compliance ×1
+        <div className="mt-1 text-gray-600">
+          📁 <code className="bg-white px-1 rounded text-[10px]">MultiDimensionalRiskCalculator.ts</code>
+        </div>
+      </div>
     </div>
   );
 };

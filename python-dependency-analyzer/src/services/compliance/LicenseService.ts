@@ -163,38 +163,38 @@ export class LicenseService {
    * Check if a specific action is allowed
    */
   canUse(rawLicense: string | undefined): boolean {
-    return this.getCapabilities(rawLicense).use;
+    return this.getCapabilities(rawLicense).use ?? false;
   }
 
   canModify(rawLicense: string | undefined): boolean {
-    return this.getCapabilities(rawLicense).modify;
+    return this.getCapabilities(rawLicense).modify ?? false;
   }
 
   canSell(rawLicense: string | undefined): boolean {
-    return this.getCapabilities(rawLicense).sell;
+    return this.getCapabilities(rawLicense).sell ?? false;
   }
 
   canUseSaaS(rawLicense: string | undefined): boolean {
-    return this.getCapabilities(rawLicense).saas;
+    return this.getCapabilities(rawLicense).saas ?? false;
   }
 
   /**
    * Check if license requires specific obligations
    */
   requiresAttribution(rawLicense: string | undefined): boolean {
-    return this.getObligations(rawLicense).attribution;
+    return this.getObligations(rawLicense).attribution ?? false;
   }
 
   requiresSourceDisclosure(rawLicense: string | undefined): boolean {
-    return this.getObligations(rawLicense).disclose_source;
+    return this.getObligations(rawLicense).disclose_source ?? false;
   }
 
   requiresShareAlike(rawLicense: string | undefined): boolean {
-    return this.getObligations(rawLicense).share_alike;
+    return this.getObligations(rawLicense).share_alike ?? false;
   }
 
   hasNetworkCopyleft(rawLicense: string | undefined): boolean {
-    return this.getObligations(rawLicense).network_copyleft;
+    return this.getObligations(rawLicense).network_copyleft ?? false;
   }
 
   /**

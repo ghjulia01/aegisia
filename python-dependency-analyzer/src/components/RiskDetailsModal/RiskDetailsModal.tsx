@@ -79,7 +79,29 @@ export const RiskDetailsModal: React.FC<RiskDetailsModalProps> = ({
                 </div>
                 <div>
                   <div className="text-xs text-gray-500">License</div>
-                  <div className="text-sm font-medium text-gray-900">{dependency.license || 'Unknown'}</div>
+                  <div className="text-sm font-medium text-gray-900">
+                    {dependency.license ? (
+                      dependency.license.length > 600 ? (
+                        <>
+                          {dependency.license.substring(0, 600)}...{' '}
+                          <a 
+                            href="#license-compliance"
+                            className="text-blue-600 hover:text-blue-800 underline font-medium"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              document.querySelector('#license-compliance')?.scrollIntoView({ behavior: 'smooth' });
+                            }}
+                          >
+                            Voir détails complets
+                          </a>
+                        </>
+                      ) : (
+                        dependency.license
+                      )
+                    ) : (
+                      'Unknown'
+                    )}
+                  </div>
                 </div>
                 <div>
                   <div className="text-xs text-gray-500">Maintainer</div>
@@ -208,7 +230,7 @@ export const RiskDetailsModal: React.FC<RiskDetailsModalProps> = ({
 
             {/* License Details */}
             {dependency.license && (
-              <div className="mt-6 pt-6 border-t border-gray-200">
+              <div id="license-compliance" className="mt-6 pt-6 border-t border-gray-200">
                 <h4 className="text-lg font-semibold text-gray-800 mb-3">⚖️ License & Compliance</h4>
                 {(() => {
                   const licenseInfo = licenseService.getLicenseInfo(dependency.license);
@@ -239,10 +261,24 @@ export const RiskDetailsModal: React.FC<RiskDetailsModalProps> = ({
                         </span>
                       </div>
 
-                      {/* License Notes */}
+                      {/* License Notes - Truncated to 100 chars with link */}
                       <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                        <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">
-                          {licenseInfo.notes.fr}
+                        <p className="text-sm text-gray-700 leading-relaxed">
+                          {licenseInfo.notes.fr.length > 100 ? (
+                            <>
+                              {licenseInfo.notes.fr.substring(0, 100)}...{' '}
+                              <a 
+                                href={`https://spdx.org/licenses/${licenseInfo.spdx}.html`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:text-blue-800 underline font-medium"
+                              >
+                                Voir plus de détails
+                              </a>
+                            </>
+                          ) : (
+                            licenseInfo.notes.fr
+                          )}
                         </p>
                       </div>
 

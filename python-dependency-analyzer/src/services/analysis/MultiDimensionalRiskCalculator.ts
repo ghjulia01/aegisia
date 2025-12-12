@@ -12,6 +12,7 @@ import {
   ComplianceRiskDetails,
   SupplyChainRiskDetails
 } from '../../types';
+import { LicenseService } from '../compliance/LicenseService';
 
 export class MultiDimensionalRiskCalculator {
   
@@ -260,43 +261,92 @@ export class MultiDimensionalRiskCalculator {
   }
 
   // ==========================================
-  // COMPLIANCE RISK
+  // COMPLIANCE RISK - NEW SCORING SYSTEM
+  // Based on: Use, Modify, Sell, SaaS capabilities + Obligations
   // ==========================================
 
   private calculateComplianceRisk(
     dep: Dependency,
     enrichedData: EnrichedData
   ): ComplianceRiskDetails {
-    let score = 0; // Start at 0
-    const concerns: string[] = [];
-    
     const license = dep.license || enrichedData.pypiData?.license || 'Unknown';
     const licenseCategory = this.categorizeLicense(license);
-
-    // UNKNOWN LICENSE = RISQUE ÉLEVÉ (≥ 7/10)
-    if (licenseCategory === 'unknown' || license === 'Unknown' || license === 'Not specified' || !license) {
-      score = 7.0;
-      concerns.push('⚠️ Licence inconnue - BLOCAGE POTENTIEL (besoin de review)');
-    } 
-    // GPL/AGPL = BESOIN DE CLASSIFICATION
-    else if (licenseCategory === 'copyleft-strong') {
-      score = 6.0;
-      concerns.push('⚠️ GPL/AGPL détecté - CLASSIFICATION REQUISE (distribution vs usage interne)');
-    } 
-    else if (licenseCategory === 'copyleft-weak') {
-      score = 3.0;
-      concerns.push('LGPL/MPL - Restrictions limitées, review recommandée');
-    } 
-    else if (licenseCategory === 'proprietary') {
+    const concerns: string[] = [];
+    
+    // Use LicenseService for capabilities and obligations
+    const licenseService = new LicenseService();
+    
+    const capabilities = licenseService.getCapabilities(license);
+    const obligations = licenseService.getObligations(license);
+    
+    // Check capabilities (true = allowed, false/null = restricted)
+    const canUse = capabilities.use === true;
+    const canModify = capabilities.modify === true;
+    const canSell = capabilities.sell === true;
+    const canSaas = capabilities.saas === true;
+    
+    // Check if there are any obligations
+    const hasObligations = 
+      obligations.attribution === true ||
+      obligations.disclose_source === true ||
+      obligations.share_alike === true ||
+      obligations.network_copyleft === true ||
+      obligations.include_license === true ||
+      obligations.state_changes === true;
+    
+    // NEW SCORING LOGIC:
+    // - All capabilities allowed + no obligations = 0/10 (perfect)
+    // - All capabilities allowed + obligations = 2/10 (minor restrictions)
+    // - Use only + no other capabilities + obligations = 8/10 (significant restrictions)
+    // - Unknown/no use = 10/10 (blocker)
+    
+    let score = 0;
+    
+    if (!canUse) {
+      // Cannot use = blocker
+      score = 10.0;
+      concerns.push('⛔ Usage NON autorisé - BLOCAGE CRITIQUE');
+    } else if (canUse && !canModify && !canSell && !canSaas && hasObligations) {
+      // Use only with obligations = 8/10
       score = 8.0;
-      concerns.push('⚠️ Licence propriétaire - Restrictions commerciales');
+      concerns.push('⚠️ Usage uniquement - Pas de modification, vente, ou SaaS');
+      if (obligations.attribution) concerns.push('Attribution requise');
+      if (obligations.disclose_source) concerns.push('Divulgation du code source requise');
+      if (obligations.share_alike) concerns.push('Share-alike requis');
+    } else if (canUse && !canModify && !canSell && !canSaas && !hasObligations) {
+      // Use only without obligations = 6/10
+      score = 6.0;
+      concerns.push('Usage uniquement - Pas de modification, vente, ou SaaS');
+    } else if (canUse && canModify && !canSell && !canSaas) {
+      // Use + Modify only
+      score = hasObligations ? 5.0 : 4.0;
+      concerns.push('Modification autorisée mais pas de vente/SaaS');
+    } else if (canUse && canModify && canSell && !canSaas) {
+      // Use + Modify + Sell but no SaaS
+      score = hasObligations ? 3.0 : 2.0;
+      concerns.push('Vente autorisée mais pas de SaaS');
+      if (hasObligations) concerns.push('Obligations à respecter');
+    } else if (canUse && canModify && canSell && canSaas) {
+      // All capabilities allowed
+      score = hasObligations ? 2.0 : 0.0;
+      if (hasObligations) {
+        concerns.push('Toutes actions autorisées - Obligations à respecter');
+      } else {
+        concerns.push(`✅ Licence permissive (${license}) - Aucune restriction`);
+      }
+    } else {
+      // Mixed or partial capabilities
+      score = 5.0;
+      concerns.push('Restrictions partielles - Review recommandée');
     }
-    else if (licenseCategory === 'permissive') {
-      score = 1.0;
-      concerns.push(`Licence permissive (${license}) - OK`);
+    
+    // Add specific obligation warnings
+    if (obligations.network_copyleft) {
+      score = Math.max(score, 7.0);
+      concerns.push('⚠️ Copyleft réseau (AGPL-like) - Divulgation requise même pour SaaS');
     }
 
-    const hasLicenseConflict = false; // À implémenter si nécessaire
+    const hasLicenseConflict = false;
 
     return {
       score: Math.min(10, score),
@@ -398,8 +448,8 @@ export class MultiDimensionalRiskCalculator {
 
   // ==========================================
   // OVERALL SCORE - FIXED WEIGHTS
-  // Security *6, Operational *3, Supply Chain *1 = 10
-  // Compliance is EXCLUDED from overall score (displayed separately)
+  // File: src/services/analysis/MultiDimensionalRiskCalculator.ts
+  // Security *5, Operational *3, Supply Chain *1, Compliance *1 = 10
   // ==========================================
 
   private calculateOverallScore(scores: {
@@ -410,19 +460,31 @@ export class MultiDimensionalRiskCalculator {
   }): number {
     // PONDÉRATION FIXE (total = 10)
     const weights = {
-      security: 0.6,      // 6/10
+      security: 0.5,      // 5/10
       operational: 0.3,   // 3/10
       supplyChain: 0.1,   // 1/10
-      compliance: 0.0,    // EXCLUDED from overall score
+      compliance: 0.1,    // 1/10 - NOW INCLUDED
     };
 
     const overall =
       scores.security.score * weights.security +
       scores.operational.score * weights.operational +
-      scores.supplyChain.score * weights.supplyChain;
-      // Compliance NOT included in overall calculation
+      scores.supplyChain.score * weights.supplyChain +
+      scores.compliance.score * weights.compliance;
 
     return Math.round(overall * 10) / 10;
+  }
+  
+  /**
+   * Get weights configuration for display
+   */
+  public getWeights(): Record<string, number> {
+    return {
+      security: 5,
+      operational: 3,
+      supplyChain: 1,
+      compliance: 1,
+    };
   }
 
   // ==========================================

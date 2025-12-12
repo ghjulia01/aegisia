@@ -46,7 +46,7 @@ npm run dev
 
 ### 2. JavaScript Security Scanner 🔜
 
-**Status**: 📅 Planned for Q2 2025
+**Status**: 📅 Planned for Q1 2026
 
 Scan npm packages for vulnerabilities and outdated dependencies.
 
@@ -62,7 +62,7 @@ Scan npm packages for vulnerabilities and outdated dependencies.
 
 ### 3. Docker Vulnerability Checker 🔜
 
-**Status**: 📅 Planned for Q3 2025
+**Status**: 📅 Planned for Q2 2026
 
 Analyze Docker images for security issues and base image vulnerabilities.
 
@@ -134,20 +134,20 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for development setup and guidelines.
 
 ## 🗺️ Roadmap
 
-### Q1 2025 ✅
+### Q4 2025 ✅
 - [x] Python Dependency Analyzer v1.0
 - [x] Multi-language support (FR/EN/ES/DE)
 - [x] Compliance generators (GDPR, ISO 42001, AI Act)
 - [ ] Unit tests (85% coverage)
 - [ ] CI/CD pipeline
 
-### Q2 2025
+### Q1 2026
 - [ ] JavaScript/npm analyzer
 - [ ] VS Code extension
 - [ ] GitHub Actions integration
 - [ ] API backend (optional)
 
-### Q3 2025
+### Q2 2026
 - [ ] Docker vulnerability checker
 - [ ] SBOM generation (CycloneDX, SPDX)
 - [ ] Slack/Teams integrations

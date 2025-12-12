@@ -166,14 +166,31 @@
     "fileLevelCopyleft": "Copyleft a nivel de archivo",
     "noObligations": "Sin obligaciones específicas"
   },
+  "packageAnalysis": {
+    "title": "Análisis de Paquete",
+    "placeholder": "Ingrese nombre del paquete (ej: requests)",
+    "analyzeDependencies": "Analizar Dependencias",
+    "analyzing": "Analizando...",
+    "enterPackage": "Ingrese un nombre de paquete y haga clic en \"Analizar Dependencias\" para ver el gráfico."
+  },
   "alternatives": {
-    "title": "Alternativas para",
+    "title": "Alternativas de Paquete",
     "profile": "Perfil de",
     "domains": "Dominios",
     "intent": "Intención",
+    "packageName": "Nombre del paquete",
+    "required": "requerido",
+    "placeholder": "ej: requests",
+    "example": "Ejemplo",
+    "exampleText": "Ingrese un solo paquete o varios separados por comas o saltos de línea.",
+    "minSimilarity": "Similitud Mín (%)",
+    "minDownloads": "Descargas Mín",
+    "licenses": "Licencias (coma)",
+    "maxAge": "Edad Máx (días)",
     "findAlternatives": "Buscar Alternativas",
-    "searching": "Búsqueda inteligente en progreso...",
+    "searching": "Buscando...",
     "noResults": "No se encontraron alternativas",
+    "errorSearch": "Error al buscar alternativas",
     "discover": "Descubra alternativas inteligentes con perfilado semántico y puntuación multicriterio",
     "buckets": {
       "bestOverall": "Mejores alternativas globales",
@@ -184,6 +201,8 @@
     },
     "whyRecommended": "Por qué:",
     "score": "Puntuación",
+    "copy": "Copiar",
+    "replace": "Reemplazar",
     "breakdown": {
       "similarity": "Similitud",
       "popularity": "Popularidad",

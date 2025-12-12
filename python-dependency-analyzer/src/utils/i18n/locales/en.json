@@ -166,14 +166,31 @@
     "fileLevelCopyleft": "File-level copyleft",
     "noObligations": "No specific obligations"
   },
+  "packageAnalysis": {
+    "title": "Package Analysis",
+    "placeholder": "Enter package name (e.g., requests)",
+    "analyzeDependencies": "Analyze Dependencies",
+    "analyzing": "Analyzing...",
+    "enterPackage": "Enter a package name and click \"Analyze Dependencies\" to see the graph."
+  },
   "alternatives": {
-    "title": "Alternatives for",
+    "title": "Package Alternatives",
     "profile": "Profile of",
     "domains": "Domains",
     "intent": "Intent",
+    "packageName": "Package name",
+    "required": "required",
+    "placeholder": "e.g. requests",
+    "example": "Example",
+    "exampleText": "Enter either a single package or multiple separated by commas or newlines.",
+    "minSimilarity": "Min Similarity (%)",
+    "minDownloads": "Min Downloads",
+    "licenses": "Licenses (comma)",
+    "maxAge": "Max Age (days)",
     "findAlternatives": "Find Alternatives",
-    "searching": "Intelligent search in progress...",
-    "noResults": "No alternatives found",
+    "searching": "Searching...",
+    "noResults": "No alternative found",
+    "errorSearch": "Failed to find alternatives",
     "discover": "Discover intelligent alternatives with semantic profiling and multi-criteria scoring",
     "buckets": {
       "bestOverall": "Best overall alternatives",
@@ -184,6 +201,8 @@
     },
     "whyRecommended": "Why:",
     "score": "Score",
+    "copy": "Copy",
+    "replace": "Replace",
     "breakdown": {
       "similarity": "Similarity",
       "popularity": "Popularity",

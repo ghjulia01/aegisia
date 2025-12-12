@@ -9,6 +9,8 @@
 
 import React, { useState } from 'react';
 import type { Dependency } from '@/types';
+import { RiskDetailsModal } from '../RiskDetailsModal';
+import { RiskBreakdownDisplay } from '../RiskBreakdownDisplay';
 
 interface Props {
   dependencies: Dependency[];
@@ -33,6 +35,18 @@ type SortDirection = 'asc' | 'desc';
 export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => {
   const [sortColumn, setSortColumn] = useState<SortColumn>('riskScore');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [selectedDependency, setSelectedDependency] = useState<Dependency | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openRiskDetails = (dep: Dependency) => {
+    setSelectedDependency(dep);
+    setIsModalOpen(true);
+  };
+
+  const closeRiskDetails = () => {
+    setIsModalOpen(false);
+    setSelectedDependency(null);
+  };
 
   /**
    * Gère le tri des colonnes
@@ -230,6 +244,11 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
               </div>
             </th>
 
+            {/* Risk Breakdown (NEW) */}
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+              📊 Détails Risque
+            </th>
+
             {/* Vulnerabilities */}
             <th
               onClick={() => handleSort('vulnerabilities')}
@@ -350,6 +369,23 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
                   </div>
                 </td>
 
+                {/* Risk Breakdown (NEW) */}
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {dep.riskBreakdown ? (
+                    <div className="flex flex-col gap-2">
+                      <RiskBreakdownDisplay riskBreakdown={dep.riskBreakdown} compact />
+                      <button
+                        onClick={() => openRiskDetails(dep)}
+                        className="text-xs text-indigo-600 hover:text-indigo-900 font-medium transition-colors"
+                      >
+                        View Details →
+                      </button>
+                    </div>
+                  ) : (
+                    <span className="text-xs text-gray-400">N/A</span>
+                  )}
+                </td>
+
                 {/* Vulnerabilities */}
                 <td className="px-6 py-4 whitespace-nowrap">
                   {vulnCount > 0 ? (
@@ -434,6 +470,15 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
           Trié par <strong>{sortColumn}</strong> ({sortDirection === 'asc' ? 'croissant' : 'décroissant'})
         </div>
       </div>
+
+      {/* Risk Details Modal */}
+      {selectedDependency && (
+        <RiskDetailsModal
+          dependency={selectedDependency}
+          isOpen={isModalOpen}
+          onClose={closeRiskDetails}
+        />
+      )}
     </div>
   );
 };

@@ -185,9 +185,9 @@ export class PyPIClient {
    */
   async getDownloadStats(packageName: string): Promise<number | null> {
     try {
-      // Try libraries.io API first (comprehensive data)
-      const url = `https://libraries.io/api/pypi/${packageName}`;
-      console.log(`[PyPI] Fetching download stats from libraries.io: ${url}`);
+      // Try libraries.io API via Vite proxy (to avoid CORS)
+      const url = `/api/libraries/api/pypi/${packageName}`;
+      console.log(`[PyPI] Fetching download stats from libraries.io via proxy: ${url}`);
       const resp = await fetch(url);
       if (resp.ok) {
         const data = (await resp.json()) as any;
@@ -196,17 +196,17 @@ export class PyPIClient {
           return Math.floor(data.downloads);
         }
       } else {
-        console.warn(`[PyPI] libraries.io returned ${resp.status} for ${packageName}`);
+        console.warn(`[PyPI] libraries.io proxy returned ${resp.status} for ${packageName}`);
       }
     } catch (e) {
-      console.warn(`[PyPI] libraries.io fetch error for ${packageName}:`, (e as Error).message);
+      console.warn(`[PyPI] libraries.io proxy fetch error for ${packageName}:`, (e as Error).message);
       // ignore, fallback below
     }
 
-    // Fallback: try pypistats.org JSON API for monthly stats
+    // Fallback: try pypistats.org JSON API via Vite proxy
     try {
-      const url = `https://pypistats.org/api/packages/${packageName}/recent?period=month&format=json`;
-      console.log(`[PyPI] Fetching download stats from pypistats: ${url}`);
+      const url = `/api/pypistats/api/packages/${packageName}/recent?period=month&format=json`;
+      console.log(`[PyPI] Fetching download stats from pypistats via proxy: ${url}`);
       const resp = await fetch(url);
       if (resp.ok) {
         const data = (await resp.json()) as any;
@@ -215,10 +215,10 @@ export class PyPIClient {
           return data.data.last_month;
         }
       } else {
-        console.warn(`[PyPI] pypistats returned ${resp.status} for ${packageName}`);
+        console.warn(`[PyPI] pypistats proxy returned ${resp.status} for ${packageName}`);
       }
     } catch (e) {
-      console.warn(`[PyPI] pypistats fetch error for ${packageName}:`, (e as Error).message);
+      console.warn(`[PyPI] pypistats proxy fetch error for ${packageName}:`, (e as Error).message);
       // ignore, no data available
     }
 
@@ -331,33 +331,6 @@ export class PyPIClient {
       return match ? match[1].trim() : part.trim();
     }).filter(Boolean);
     return maintainers;
-  }
-
-  /**
-   * Extract license from PyPI info (handles multiple sources)
-   * @param info - Package info object
-   * @returns License string or null
-   */
-  extractLicense(info: any): string | null {
-    if (info.license && info.license.length > 0) return info.license;
-    
-    const classifiers = info.classifiers || [];
-    const licenseClassifier = classifiers.find((c: string) => c.startsWith('License ::'));
-    if (licenseClassifier) {
-      const parts = licenseClassifier.split('::');
-      return parts[2]?.trim() || null;
-    }
-    return null;
-  }
-
-  /**
-   * Extract GitHub URL from project URLs
-   * @param info - Package info object
-   * @returns GitHub URL or null
-   */
-  getGitHubUrl(info: any): string | null {
-    const projectUrls = info.project_urls || {};
-    return projectUrls.homepage || projectUrls.source || projectUrls['Source Code'] || null;
   }
 
   /**

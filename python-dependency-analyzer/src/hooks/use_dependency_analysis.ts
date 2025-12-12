@@ -8,6 +8,7 @@ import { PyPIClient } from '../services/api/PyPIClient';
 import { GitHubClient } from '../services/api/github_client';
 import { CVEClient } from '../services/api/cve_client';
 import { RiskCalculator } from '../services/analysis/RiskCalculator';
+import { MultiDimensionalRiskCalculator } from '../services/analysis/MultiDimensionalRiskCalculator';
 // ==========================================
 // MAIN DEPENDENCY ANALYSIS HOOK
 // ==========================================
@@ -48,6 +49,7 @@ export const useDependencyAnalysis = () => {
   const githubClient = new GitHubClient();
   const cveClient = new CVEClient();
   const riskCalculator = new RiskCalculator();
+  const multiDimensionalRiskCalculator = new MultiDimensionalRiskCalculator();
 
   type AltFilters = {
     minSimilarity?: number;
@@ -172,7 +174,12 @@ export const useDependencyAnalysis = () => {
           riskScore: 0,
         };
 
+        // Calculate both legacy and multi-dimensional risk
         dependency.riskScore = riskCalculator.calculate(dependency, dependency.enrichedData!);
+        dependency.riskBreakdown = multiDimensionalRiskCalculator.calculateRiskBreakdown(
+          dependency,
+          dependency.enrichedData!
+        );
 
         setStatus(`🔄 Finding safer alternatives...`);
         const alts = await findAlternatives(packageName, dependency.riskScore, filters);

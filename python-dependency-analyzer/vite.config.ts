@@ -18,6 +18,20 @@ export default defineConfig({
   server: {
     port: 3000,
     open: true,
+    proxy: {
+      '/api/libraries': {
+        target: 'https://libraries.io',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/libraries/, ''),
+        secure: false,
+      },
+      '/api/pypistats': {
+        target: 'https://pypistats.org',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/pypistats/, ''),
+        secure: false,
+      },
+    },
   },
   build: {
     outDir: 'dist',

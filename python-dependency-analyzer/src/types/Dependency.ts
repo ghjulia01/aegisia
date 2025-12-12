@@ -2,6 +2,8 @@
 // TYPE DEFINITIONS
 // ==========================================
 
+import { RiskBreakdown } from './RiskBreakdown';
+
 /**
  * PyPI Package Information
  */
@@ -91,6 +93,7 @@ export interface Dependency {
   maintainers?: number;
   description?: string;
   riskScore: number;
+  riskBreakdown?: RiskBreakdown;
   transitiveDeps?: string[];
 }
 

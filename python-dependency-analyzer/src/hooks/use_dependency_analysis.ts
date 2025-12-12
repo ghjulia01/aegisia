@@ -15,10 +15,6 @@ import { MultiDimensionalRiskCalculator } from '../services/analysis/MultiDimens
 
 import { AlternativeFinder as AlternativeFinderService } from '../services/analysis/AlternativeFinder';
 import { AlternativeRecommender } from '../services/analysis/AlternativeRecommender';
-import { PackageProfiler } from '../services/analysis/PackageProfiler';
-
-// Local fallback for common alternatives (can be extended later)
-const COMMON_ALTERNATIVES: Record<string, string[]> = {};
 
 const parsePackageNames = (input: string): string[] => {
   const lines = input.split(/[\n,;\s]+/);
@@ -61,7 +57,7 @@ export const useDependencyAnalysis = () => {
   };
 
   const findAlternatives = useCallback(
-    async (packageName: string, currentRisk: number, filters?: AltFilters, pypiData?: any, githubData?: any): Promise<AlternativePackage[]> => {
+    async (packageName: string, _currentRisk: number, filters?: AltFilters, pypiData?: any, githubData?: any): Promise<AlternativePackage[]> => {
       try {
         console.log(`[Alternatives V3] Finding alternatives for ${packageName} with intelligent profiling...`);
         
@@ -113,12 +109,7 @@ export const useDependencyAnalysis = () => {
               vulnerabilities: [],
               transitiveDeps: [],
               riskScore: Math.max(1, 10 - (alt.score / 10)), // Convert score to risk (inverted)
-              similarityScore: alt.breakdown.similarity,
-              reasons: [
-                alt.whyRecommended,
-                `Bucket: ${alt.bucketLabel}`,
-                `Score: ${alt.score}/100`
-              ]
+              reasonForRecommendation: `${alt.whyRecommended} (Score: ${alt.score}/100, Bucket: ${alt.bucketLabel})`
             };
             
             alternatives.push(altPackage);

@@ -36,7 +36,7 @@ export const DependencyAnalyzer: React.FC = () => {
     replaceDependency
   } = useDependencyContext();
 
-  const [filters, setFilters] = useState<{
+  const [filters] = useState<{
     minSimilarity?: number;
     minDownloads?: number;
     licensesAllowed?: string[];
@@ -53,32 +53,6 @@ export const DependencyAnalyzer: React.FC = () => {
   
 
   const { t, currentLanguage, changeLanguage, availableLanguages, isLoading } = useLanguage();
-
-  /**
-   * Gère l'analyse d'un package unique
-   */
-  const handleAnalyzeSingle = async () => {
-    if (!packageInput.trim()) return;
-    await analyzeDependency(packageInput.trim(), filters);
-    setPackageInput('');
-  };
-
-  /**
-   * Gère l'analyse de plusieurs packages (séparés par virgules ou sauts de ligne)
-   */
-  const handleAnalyzeMultiple = async () => {
-    if (!packageInput.trim()) return;
-    
-    const packages = packageInput
-      .split(/[,\n]/)
-      .map(p => p.trim())
-      .filter(p => p.length > 0);
-    
-    if (packages.length === 0) return;
-    
-    await analyzeMultipleDependencies(packages, filters);
-    setPackageInput('');
-  };
 
   /**
    * Calcule les statistiques de risque

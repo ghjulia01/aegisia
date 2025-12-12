@@ -312,7 +312,7 @@ export class AlternativeRecommender {
    * Generate recommendation reason
    */
   private generateRecommendationReason(
-    original: PackageProfile,
+    _original: PackageProfile,
     candidateName: string,
     score: any
   ): string {

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import type { D3GraphData, D3Node, D3Link } from '@/utils/graph/GraphDataBuilder';
+import { useLanguage } from '@/hooks/use_language_hook';
 
 interface DependencyGraphProps {
   data: D3GraphData;
@@ -17,6 +18,7 @@ const DependencyGraph: React.FC<DependencyGraphProps> = ({
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (!svgRef.current) return;
@@ -185,8 +187,8 @@ const DependencyGraph: React.FC<DependencyGraphProps> = ({
     <div className="dependency-graph-container" style={{ position: 'relative', minHeight: 300 }}>
       {(!data || !data.nodes || data.nodes.length === 0) ? (
         <div className="p-6 text-center text-gray-600 bg-white rounded-lg shadow-sm">
-          <p className="font-medium">Aucun nœud à afficher</p>
-          <p className="text-sm mt-2">Lancez une analyse pour générer le graphe des dépendances.</p>
+          <p className="font-medium">{t.messages.noData}</p>
+          <p className="text-sm mt-2">{t.graph.launchAnalysis}</p>
         </div>
       ) : (
         <>
@@ -195,24 +197,24 @@ const DependencyGraph: React.FC<DependencyGraphProps> = ({
           {/* Side panel for node details */}
           <div style={{ position: 'absolute', top: 10, right: 10, width: 280 }}>
             <div className="bg-white rounded-md shadow p-3 text-sm">
-              <div className="font-semibold mb-2">Node details</div>
+              <div className="font-semibold mb-2">{t.graph.nodeDetails}</div>
               {selected ? (
                 <div>
                   <div><strong>{selected.name}</strong> ({selected.version})</div>
-                  <div className="text-xs text-gray-500">Risk: {selected.riskScore.toFixed(1)}</div>
-                  <div className="text-xs">Level: {selected.level}</div>
-                  <div className="text-xs">Has CVE: {selected.hasCVE ? 'Yes' : 'No'}</div>
+                  <div className="text-xs text-gray-500">{t.risk.overall}: {selected.riskScore.toFixed(1)}</div>
+                  <div className="text-xs">{t.supplyChain.depthLevel}: {selected.level}</div>
+                  <div className="text-xs">{t.table.headers.cve}: {selected.hasCVE ? t.messages.success : t.messages.noData}</div>
                 </div>
               ) : (
-                <div className="text-gray-500">Cliquez sur un nœud pour voir les détails</div>
+                <div className="text-gray-500">{t.graph.nodeDetails}</div>
               )}
             </div>
             {/* Legend below panel */}
             <div className="bg-white rounded-md shadow p-3 mt-3 text-xs">
-              <div><span style={{color: '#ef4444'}}>●</span> Has CVE</div>
-              <div><span style={{color: '#f59e0b'}}>●</span> High Risk (&gt;7)</div>
-              <div><span style={{color: '#eab308'}}>●</span> Medium Risk (4-7)</div>
-              <div><span style={{color: '#22c55e'}}>●</span> Low Risk (&lt;4)</div>
+              <div><span style={{color: '#ef4444'}}>●</span> {t.table.headers.cve}</div>
+              <div><span style={{color: '#f59e0b'}}>●</span> {t.risk.levels.high} (&gt;7)</div>
+              <div><span style={{color: '#eab308'}}>●</span> {t.risk.levels.moderate} (4-7)</div>
+              <div><span style={{color: '#22c55e'}}>●</span> {t.risk.levels.low} (&lt;4)</div>
             </div>
           </div>
         </>

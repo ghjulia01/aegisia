@@ -3,6 +3,7 @@ import { Dependency } from '../../types';
 import { RiskRadarChart } from '../RiskRadarChart';
 import { RiskBreakdownDisplay } from '../RiskBreakdownDisplay';
 import { licenseService } from '@/services/compliance/LicenseService';
+import { useLanguage } from '@/hooks/use_language_hook';
 
 interface RiskDetailsModalProps {
   dependency: Dependency;
@@ -15,6 +16,8 @@ export const RiskDetailsModal: React.FC<RiskDetailsModalProps> = ({
   isOpen,
   onClose,
 }) => {
+  const { t } = useLanguage();
+  
   if (!isOpen) return null;
 
   const riskBreakdown = dependency.riskBreakdown;
@@ -92,7 +95,7 @@ export const RiskDetailsModal: React.FC<RiskDetailsModalProps> = ({
                               document.querySelector('#license-compliance')?.scrollIntoView({ behavior: 'smooth' });
                             }}
                           >
-                            Voir détails complets
+                            {t.packageInfo.viewFullDetails}
                           </a>
                         </>
                       ) : (
@@ -273,7 +276,7 @@ export const RiskDetailsModal: React.FC<RiskDetailsModalProps> = ({
                                 rel="noopener noreferrer"
                                 className="text-blue-600 hover:text-blue-800 underline font-medium"
                               >
-                                Voir plus de détails
+                                {t.compliance.viewMoreDetails}
                               </a>
                             </>
                           ) : (

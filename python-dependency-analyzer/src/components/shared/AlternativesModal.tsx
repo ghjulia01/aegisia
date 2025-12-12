@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { AlternativePackage, AlternativeRecommendation } from '@/services/analysis/AlternativeRecommender';
+import { useLanguage } from '@/hooks/use_language_hook';
 
 interface Props {
   isOpen: boolean;
@@ -19,6 +20,8 @@ export const AlternativesModal: React.FC<Props> = ({
   recommendation,
   onSelectAlternative,
 }) => {
+  const { t } = useLanguage();
+  
   if (!isOpen || !recommendation) return null;
 
   const getScoreColor = (score: number) => {
@@ -54,7 +57,7 @@ export const AlternativesModal: React.FC<Props> = ({
             onClick={() => onSelectAlternative(alt.name)}
             className="ml-4 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors text-sm font-medium"
           >
-            Analyser
+            {t.actions.analyze}
           </button>
         )}
       </div>
@@ -184,7 +187,7 @@ export const AlternativesModal: React.FC<Props> = ({
                 Aucune alternative trouvée pour le moment
               </p>
               <p className="text-gray-400 text-sm mt-2">
-                Essayez d'analyser d'autres packages ou consultez la documentation
+                {t.alternatives.noResults}
               </p>
             </div>
           ) : (

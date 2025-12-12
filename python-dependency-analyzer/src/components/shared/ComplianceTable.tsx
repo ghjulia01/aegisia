@@ -10,12 +10,15 @@
 import React from 'react';
 import type { Dependency } from '@/types';
 import { licenseService } from '@/services/compliance/LicenseService';
+import { useLanguage } from '@/hooks/use_language_hook';
 
 interface Props {
   dependencies: Dependency[];
 }
 
 export const ComplianceTable: React.FC<Props> = ({ dependencies }) => {
+  const { t } = useLanguage();
+  
   /**
    * Get badge color based on risk level
    */
@@ -50,7 +53,7 @@ export const ComplianceTable: React.FC<Props> = ({ dependencies }) => {
   return (
     <div className="overflow-x-auto">
       <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <h3 className="text-lg font-semibold text-blue-900 mb-2">📋 Analyse de Conformité des Licenses</h3>
+        <h3 className="text-lg font-semibold text-blue-900 mb-2">📋 {t.modal.riskDetails.licenseCompliance}</h3>
         <p className="text-sm text-blue-700">
           Cette table détaille les capacités et obligations de chaque license pour vous aider à évaluer
           la compatibilité avec votre projet. Les licenses <strong>UNKNOWN</strong> sont considérées comme

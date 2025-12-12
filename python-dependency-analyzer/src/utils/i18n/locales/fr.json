@@ -1,0 +1,192 @@
+{
+  "app": {
+    "title": "Analyseur de Dépendances Python Pro",
+    "subtitle": "Gouvernance, Transparence & Sécurité - Conformité ISO 42001 & RGPD"
+  },
+  "actions": {
+    "import": "Importer requirements.txt",
+    "analyze": "Analyser",
+    "analyzing": "Analyse en cours...",
+    "generatePDF": "Générer Rapport PDF",
+    "export": "Exporter",
+    "exportJSON": "Exporter JSON",
+    "exportCSV": "Exporter CSV",
+    "remove": "Supprimer",
+    "viewDetails": "Voir Détails",
+    "showAlternatives": "Alternatives",
+    "replace": "Remplacer",
+    "copy": "Copier",
+    "close": "Fermer",
+    "save": "Enregistrer",
+    "cancel": "Annuler"
+  },
+  "form": {
+    "analyzeDependency": "Analyser une dépendance",
+    "packagePlaceholder": "Nom du package PyPI (ex: requests)",
+    "packageName": "Nom du package",
+    "multiplePackages": "Plusieurs packages (séparés par des virgules ou retours à la ligne)",
+    "autoFetch": "L'analyse récupère automatiquement les données de PyPI, GitHub, et vérifie les CVE connus",
+    "enterEmail": "Votre email",
+    "subscribe": "S'abonner"
+  },
+  "table": {
+    "headers": {
+      "package": "Package",
+      "version": "Version",
+      "country": "Pays",
+      "type": "Type",
+      "maintainer": "Mainteneur",
+      "globalRisk": "Risque Global",
+      "security": "Security",
+      "operational": "Operational",
+      "supplyChain": "Supply Chain",
+      "compliance": "Compliance",
+      "use": "Use",
+      "modify": "Modify",
+      "sell": "Sell",
+      "saas": "SaaS",
+      "riskRadar": "Risk Radar",
+      "cve": "CVE",
+      "lastUpdate": "MAJ",
+      "downloads": "Downloads",
+      "stars": "Stars",
+      "license": "Licence",
+      "actions": "Actions"
+    },
+    "empty": "Aucune dépendance analysée. Ajoutez un package PyPI ou importez un fichier requirements.txt",
+    "sortedBy": "Trié par",
+    "ascending": "croissant",
+    "descending": "décroissant",
+    "packages": "package(s)",
+    "weights": "Pondération Global Risk: Security ×5, Operational ×3, Supply Chain ×1, Compliance ×1 (total=10)",
+    "configFile": "Fichier:"
+  },
+  "stats": {
+    "total": "Total Dépendances",
+    "avgRisk": "Risque Moyen",
+    "criticalCount": "Packages Critiques",
+    "openSource": "Open Source",
+    "totalCVEs": "Total CVE",
+    "criticalCVEs": "CVE Critiques"
+  },
+  "tabs": {
+    "tableView": "Table",
+    "chartView": "Graphiques",
+    "graphView": "Graphe",
+    "compliance": "Conformité"
+  },
+  "risk": {
+    "overall": "Risque Global",
+    "security": "Sécurité",
+    "operational": "Opérationnel",
+    "compliance": "Conformité",
+    "supplyChain": "Chaîne d'approvisionnement",
+    "levels": {
+      "minimal": "Minimal",
+      "low": "Faible",
+      "moderate": "Modéré",
+      "high": "Élevé",
+      "critical": "Critique"
+    },
+    "confidence": "Confiance",
+    "primaryConcern": "Préoccupation principale"
+  },
+  "modal": {
+    "riskDetails": {
+      "title": "Analyse Multi-Dimensionnelle des Risques",
+      "riskRadar": "Risk Radar",
+      "riskDetails": "Risk Details",
+      "packageInfo": "Package Information",
+      "securityAnalysis": "Analyse de Sécurité",
+      "operationalAnalysis": "Analyse Opérationnelle",
+      "supplyChainAnalysis": "Analyse Supply Chain",
+      "licenseCompliance": "License & Compliance"
+    }
+  },
+  "packageInfo": {
+    "version": "Version",
+    "license": "Licence",
+    "maintainer": "Mainteneur",
+    "githubStars": "GitHub Stars",
+    "downloads": "Downloads (Mensuel)",
+    "lastUpdate": "Dernière MAJ",
+    "viewFullDetails": "Voir détails complets"
+  },
+  "security": {
+    "totalCVEs": "Total CVE",
+    "criticalCVEs": "CVE Critiques",
+    "vulnerabilities": "Vulnérabilités mineures",
+    "versionsAffected": "Versions affectées (assume applicable)"
+  },
+  "operational": {
+    "daysSinceUpdate": "Jours depuis MAJ",
+    "maintenanceFrequency": "Fréquence de maintenance",
+    "communitySize": "Taille communauté",
+    "busFactor": "Bus Factor"
+  },
+  "supplyChain": {
+    "directDeps": "Dépendances Directes",
+    "transitiveDeps": "Dépendances Transitives",
+    "depthLevel": "Niveau de Profondeur"
+  },
+  "compliance": {
+    "capabilities": "Capacités (Ce que vous POUVEZ faire)",
+    "obligations": "Obligations (Ce que vous DEVEZ faire)",
+    "use": "Utiliser",
+    "copy": "Copier",
+    "modify": "Modifier",
+    "distribute": "Distribuer",
+    "sell": "Vendre",
+    "saasUsage": "Usage SaaS",
+    "privateUse": "Usage privé",
+    "attribution": "Attribution requise",
+    "includeSource": "Inclure le code source",
+    "shareAlike": "Share-alike",
+    "networkCopyleft": "Copyleft réseau",
+    "viewMoreDetails": "Voir plus de détails",
+    "riskLevel": "Risk Level"
+  },
+  "alternatives": {
+    "title": "Alternatives pour",
+    "profile": "Profil de",
+    "domains": "Domaines",
+    "intent": "Intent",
+    "findAlternatives": "Find Alternatives",
+    "searching": "Recherche intelligente en cours...",
+    "noResults": "Aucune alternative trouvée",
+    "discover": "Découvrez des alternatives intelligentes avec profiling sémantique et scoring multi-critères",
+    "buckets": {
+      "bestOverall": "Meilleures alternatives globales",
+      "performance": "Performance optimisée",
+      "lightweight": "Léger et minimal",
+      "specialized": "Spécialisé",
+      "similar": "Fonctionnalités similaires"
+    },
+    "whyRecommended": "Pourquoi :",
+    "score": "Score",
+    "breakdown": {
+      "similarity": "Similarité",
+      "popularity": "Popularité",
+      "maintenance": "Maintenance",
+      "security": "Sécurité",
+      "license": "License"
+    }
+  },
+  "messages": {
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "noData": "Aucune donnée disponible",
+    "countryNote": "Note: Le pays d'origine est affiché à titre informatif mais n'influe pas sur le score de risque.",
+    "newPackageNote": "Les nouveaux packages (<1000 stars) sont évalués sur leur maintenance, CVE et qualité de code."
+  },
+  "navigation": {
+    "home": "Accueil",
+    "packageAnalysis": "Analyse de Packages",
+    "packageAlternative": "Alternative de Packages"
+  },
+  "graph": {
+    "nodeDetails": "Cliquez sur un nœud pour voir les détails",
+    "launchAnalysis": "Lancez une analyse pour générer le graphe des dépendances"
+  }
+}

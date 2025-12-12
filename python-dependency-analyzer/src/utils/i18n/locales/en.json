@@ -1,0 +1,192 @@
+{
+  "app": {
+    "title": "Python Dependency Analyzer Pro",
+    "subtitle": "Governance, Transparency & Security - ISO 42001 & GDPR Compliance"
+  },
+  "actions": {
+    "import": "Import requirements.txt",
+    "analyze": "Analyze",
+    "analyzing": "Analyzing...",
+    "generatePDF": "Generate PDF Report",
+    "export": "Export",
+    "exportJSON": "Export JSON",
+    "exportCSV": "Export CSV",
+    "remove": "Remove",
+    "viewDetails": "View Details",
+    "showAlternatives": "Alternatives",
+    "replace": "Replace",
+    "copy": "Copy",
+    "close": "Close",
+    "save": "Save",
+    "cancel": "Cancel"
+  },
+  "form": {
+    "analyzeDependency": "Analyze a dependency",
+    "packagePlaceholder": "PyPI package name (e.g., requests)",
+    "packageName": "Package name",
+    "multiplePackages": "Multiple packages (comma or newline separated)",
+    "autoFetch": "Analysis automatically retrieves data from PyPI, GitHub, and checks for known CVEs",
+    "enterEmail": "Your email",
+    "subscribe": "Subscribe"
+  },
+  "table": {
+    "headers": {
+      "package": "Package",
+      "version": "Version",
+      "country": "Country",
+      "type": "Type",
+      "maintainer": "Maintainer",
+      "globalRisk": "Global Risk",
+      "security": "Security",
+      "operational": "Operational",
+      "supplyChain": "Supply Chain",
+      "compliance": "Compliance",
+      "use": "Use",
+      "modify": "Modify",
+      "sell": "Sell",
+      "saas": "SaaS",
+      "riskRadar": "Risk Radar",
+      "cve": "CVE",
+      "lastUpdate": "Last Update",
+      "downloads": "Downloads",
+      "stars": "Stars",
+      "license": "License",
+      "actions": "Actions"
+    },
+    "empty": "No dependencies analyzed. Add a PyPI package or import a requirements.txt file",
+    "sortedBy": "Sorted by",
+    "ascending": "ascending",
+    "descending": "descending",
+    "packages": "package(s)",
+    "weights": "Global Risk Weighting: Security ×5, Operational ×3, Supply Chain ×1, Compliance ×1 (total=10)",
+    "configFile": "File:"
+  },
+  "stats": {
+    "total": "Total Dependencies",
+    "avgRisk": "Average Risk",
+    "criticalCount": "Critical Packages",
+    "openSource": "Open Source",
+    "totalCVEs": "Total CVE",
+    "criticalCVEs": "Critical CVEs"
+  },
+  "tabs": {
+    "tableView": "Table",
+    "chartView": "Charts",
+    "graphView": "Graph",
+    "compliance": "Compliance"
+  },
+  "risk": {
+    "overall": "Overall Risk",
+    "security": "Security",
+    "operational": "Operational",
+    "compliance": "Compliance",
+    "supplyChain": "Supply Chain",
+    "levels": {
+      "minimal": "Minimal",
+      "low": "Low",
+      "moderate": "Moderate",
+      "high": "High",
+      "critical": "Critical"
+    },
+    "confidence": "Confidence",
+    "primaryConcern": "Primary Concern"
+  },
+  "modal": {
+    "riskDetails": {
+      "title": "Multi-Dimensional Risk Analysis",
+      "riskRadar": "Risk Radar",
+      "riskDetails": "Risk Details",
+      "packageInfo": "Package Information",
+      "securityAnalysis": "Security Analysis",
+      "operationalAnalysis": "Operational Analysis",
+      "supplyChainAnalysis": "Supply Chain Analysis",
+      "licenseCompliance": "License & Compliance"
+    }
+  },
+  "packageInfo": {
+    "version": "Version",
+    "license": "License",
+    "maintainer": "Maintainer",
+    "githubStars": "GitHub Stars",
+    "downloads": "Downloads (Monthly)",
+    "lastUpdate": "Last Update",
+    "viewFullDetails": "View full details"
+  },
+  "security": {
+    "totalCVEs": "Total CVEs",
+    "criticalCVEs": "Critical CVEs",
+    "vulnerabilities": "Minor vulnerabilities",
+    "versionsAffected": "Affected versions (assume applicable)"
+  },
+  "operational": {
+    "daysSinceUpdate": "Days Since Update",
+    "maintenanceFrequency": "Maintenance Frequency",
+    "communitySize": "Community Size",
+    "busFactor": "Bus Factor"
+  },
+  "supplyChain": {
+    "directDeps": "Direct Dependencies",
+    "transitiveDeps": "Transitive Dependencies",
+    "depthLevel": "Depth Level"
+  },
+  "compliance": {
+    "capabilities": "Capabilities (What you CAN do)",
+    "obligations": "Obligations (What you MUST do)",
+    "use": "Use",
+    "copy": "Copy",
+    "modify": "Modify",
+    "distribute": "Distribute",
+    "sell": "Sell",
+    "saasUsage": "SaaS Usage",
+    "privateUse": "Private Use",
+    "attribution": "Attribution required",
+    "includeSource": "Include source code",
+    "shareAlike": "Share-alike",
+    "networkCopyleft": "Network copyleft",
+    "viewMoreDetails": "View more details",
+    "riskLevel": "Risk Level"
+  },
+  "alternatives": {
+    "title": "Alternatives for",
+    "profile": "Profile of",
+    "domains": "Domains",
+    "intent": "Intent",
+    "findAlternatives": "Find Alternatives",
+    "searching": "Intelligent search in progress...",
+    "noResults": "No alternatives found",
+    "discover": "Discover intelligent alternatives with semantic profiling and multi-criteria scoring",
+    "buckets": {
+      "bestOverall": "Best overall alternatives",
+      "performance": "Optimized performance",
+      "lightweight": "Lightweight and minimal",
+      "specialized": "Specialized",
+      "similar": "Similar functionality"
+    },
+    "whyRecommended": "Why:",
+    "score": "Score",
+    "breakdown": {
+      "similarity": "Similarity",
+      "popularity": "Popularity",
+      "maintenance": "Maintenance",
+      "security": "Security",
+      "license": "License"
+    }
+  },
+  "messages": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "noData": "No data available",
+    "countryNote": "Note: The country of origin is displayed for information only and does not affect the risk score.",
+    "newPackageNote": "New packages (<1000 stars) are evaluated on maintenance, CVE and code quality."
+  },
+  "navigation": {
+    "home": "Home",
+    "packageAnalysis": "Package Analysis",
+    "packageAlternative": "Package Alternative"
+  },
+  "graph": {
+    "nodeDetails": "Click on a node to see details",
+    "launchAnalysis": "Launch an analysis to generate the dependency graph"
+  }
+}

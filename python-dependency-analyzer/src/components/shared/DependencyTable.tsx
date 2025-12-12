@@ -11,6 +11,7 @@ import React, { useState } from 'react';
 import type { Dependency } from '@/types';
 import { RiskDetailsModal } from '../RiskDetailsModal';
 import { licenseService } from '@/services/compliance/LicenseService';
+import { useLanguage } from '@/hooks/use_language_hook';
 
 interface Props {
   dependencies: Dependency[];
@@ -37,6 +38,7 @@ type SortColumn =
 type SortDirection = 'asc' | 'desc';
 
 export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => {
+  const { t } = useLanguage();
   const [sortColumn, setSortColumn] = useState<SortColumn>('globalRisk');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [selectedDependency, setSelectedDependency] = useState<Dependency | null>(null);
@@ -504,7 +506,7 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
                       onClick={() => openRiskDetails(dep)}
                       className="px-3 py-1.5 text-xs bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors font-medium shadow-sm"
                     >
-                      📊 Voir Détails
+                      📊 {t.actions.viewDetails}
                     </button>
                   ) : (
                     <span className="text-xs text-gray-400">N/A</span>

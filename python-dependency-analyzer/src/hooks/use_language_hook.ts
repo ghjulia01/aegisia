@@ -1,32 +1,64 @@
 // ==========================================
-// LANGUAGE HOOK (i18n)
+// LANGUAGE HOOK (i18n) - JSON-based
 // ==========================================
 
-import { useState, useCallback, useMemo } from 'react';
-import { Language } from '../types/Dependency';
-import { translations } from '../utils/i18n/translations';
+import { useState, useCallback, useMemo, useEffect } from 'react';
+import { Language } from '../types';
+import { loadTranslation, getNestedTranslation, type TranslationObject } from '../utils/i18n/loadTranslations';
 
 /**
  * Language hook for internationalization
- * Manages current language and provides translations
+ * Manages current language and provides translations from JSON files
  */
 export const useLanguage = () => {
   const [language, setLanguageState] = useState<Language>(() => {
     // Try to get from localStorage
     const saved = localStorage.getItem('preferred_language');
-    if (saved && ['fr', 'en', 'es', 'de'].includes(saved)) {
+    if (saved && ['fr', 'en', 'es', 'de', 'it'].includes(saved)) {
       return saved as Language;
     }
 
     // Try to detect from browser
     const browserLang = navigator.language.split('-')[0];
-    if (['fr', 'en', 'es', 'de'].includes(browserLang)) {
+    if (['fr', 'en', 'es', 'de', 'it'].includes(browserLang)) {
       return browserLang as Language;
     }
 
     // Default to French
     return 'fr';
   });
+
+  const [translations, setTranslations] = useState<TranslationObject>({});
+  const [isLoading, setIsLoading] = useState(true);
+
+  /**
+   * Load translations when language changes
+   */
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadTranslations = async () => {
+      setIsLoading(true);
+      try {
+        const loadedTranslations = await loadTranslation(language);
+        if (isMounted) {
+          setTranslations(loadedTranslations);
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('[i18n] Failed to load translations:', error);
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadTranslations();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [language]);
 
   /**
    * Change language and persist choice
@@ -41,28 +73,18 @@ export const useLanguage = () => {
    * Get translations for current language
    */
   const t = useMemo(() => {
-    return translations[language];
-  }, [language]);
+    return translations;
+  }, [translations]);
 
   /**
-   * Translate a specific key with fallback
+   * Translate a specific key with fallback using dot notation
+   * Example: translate('app.title') or translate('table.headers.package')
    */
   const translate = useCallback(
     (key: string): string => {
-      const keys = key.split('.');
-      let value: any = t;
-
-      for (const k of keys) {
-        value = value?.[k];
-        if (value === undefined) {
-          console.warn(`[i18n] Missing translation key: ${key}`);
-          return key;
-        }
-      }
-
-      return value;
+      return getNestedTranslation(translations, key);
     },
-    [t]
+    [translations]
   );
 
   /**
@@ -86,7 +108,7 @@ export const useLanguage = () => {
     [language]
   );
 
-  const availableLanguages: Language[] = ['fr', 'en', 'es', 'de'];
+  const availableLanguages: Language[] = ['fr', 'en', 'es', 'de', 'it'];
 
   // Create a proxy object that acts as both a function AND an object with translation keys
   const tProxy = new Proxy(translate, {
@@ -104,6 +126,7 @@ export const useLanguage = () => {
     // core state
     language,
     setLanguage,
+    isLoading,
 
     // compatibility aliases used throughout the app
     currentLanguage: language,

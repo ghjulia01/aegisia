@@ -38,7 +38,7 @@ type SortColumn =
 type SortDirection = 'asc' | 'desc';
 
 export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => {
-  const { t } = useLanguage();
+  const { t, isLoading } = useLanguage();
   const [sortColumn, setSortColumn] = useState<SortColumn>('globalRisk');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [selectedDependency, setSelectedDependency] = useState<Dependency | null>(null);
@@ -195,6 +195,11 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
     );
   };
 
+  // Wait for translations to load
+  if (isLoading) {
+    return <div className="p-4 text-center">Loading translations...</div>;
+  }
+
   return (
     <div className="overflow-x-auto shadow-md rounded-lg">
       <table className="min-w-full divide-y divide-gray-200">
@@ -206,7 +211,7 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
               className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
             >
               <div className="flex items-center gap-2">
-                <span>📦 Package</span>
+                <span>📦 {t.table.headers.package}</span>
                 <SortIcon column="name" />
               </div>
             </th>
@@ -217,7 +222,7 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
               className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
             >
               <div className="flex items-center gap-2">
-                <span>🔢 Version</span>
+                <span>🔢 {t.table.headers.version}</span>
                 <SortIcon column="version" />
               </div>
             </th>
@@ -228,7 +233,7 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
               className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
             >
               <div className="flex items-center gap-2">
-                <span>🌍 Pays</span>
+                <span>🌍 {t.table.headers.country}</span>
                 <SortIcon column={ 'country' as SortColumn } />
               </div>
             </th>
@@ -239,7 +244,7 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
               className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
             >
               <div className="flex items-center gap-2">
-                <span>📦 Type</span>
+                <span>📦 {t.table.headers.type}</span>
                 <SortIcon column={ 'type' as SortColumn } />
               </div>
             </th>
@@ -250,7 +255,7 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
               className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
             >
               <div className="flex items-center gap-2">
-                <span>👤 Mainteneur</span>
+                <span>👤 {t.table.headers.maintainer}</span>
                 <SortIcon column={ 'maintainer' as SortColumn } />
               </div>
             </th>
@@ -261,7 +266,7 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
               className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none bg-indigo-50"
             >
               <div className="flex items-center gap-2">
-                <span>🎯 Global Risk</span>
+                <span>🎯 {t.table.headers.globalRisk}</span>
                 <SortIcon column="globalRisk" />
               </div>
             </th>
@@ -272,7 +277,7 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
               className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
             >
               <div className="flex items-center gap-1">
-                <span>🔒 Security</span>
+                <span>🔒 {t.table.headers.security}</span>
                 <SortIcon column="securityRisk" />
               </div>
             </th>
@@ -283,7 +288,7 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
               className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
             >
               <div className="flex items-center gap-1">
-                <span>⚙️ Operational</span>
+                <span>⚙️ {t.table.headers.operational}</span>
                 <SortIcon column="operationalRisk" />
               </div>
             </th>
@@ -294,7 +299,7 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
               className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
             >
               <div className="flex items-center gap-1">
-                <span>🔗 Supply Chain</span>
+                <span>🔗 {t.table.headers.supplyChain}</span>
                 <SortIcon column="supplyChainRisk" />
               </div>
             </th>
@@ -305,28 +310,28 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
               className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
             >
               <div className="flex items-center gap-1">
-                <span>📜 Compliance</span>
+                <span>📜 {t.table.headers.compliance}</span>
                 <SortIcon column="complianceRisk" />
               </div>
             </th>
 
             {/* COMPLIANCE CAPABILITIES (4 colonnes) */}
             <th className="px-3 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider bg-purple-50">
-              ✅ Use
+              ✅ {t.compliance.use}
             </th>
             <th className="px-3 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider bg-purple-50">
-              ✏️ Modify
+              ✏️ {t.compliance.modify}
             </th>
             <th className="px-3 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider bg-purple-50">
-              💰 Sell
+              💰 {t.compliance.sell}
             </th>
             <th className="px-3 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider bg-purple-50">
-              ☁️ SaaS
+              ☁️ {t.compliance.saas}
             </th>
 
             {/* RISK RADAR DETAIL (action button) */}
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-              📊 Risk Radar
+              📊 {t.table.headers.riskRadar}
             </th>
 
             {/* Vulnerabilities */}
@@ -335,7 +340,7 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
               className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
             >
               <div className="flex items-center gap-2">
-                <span>🔒 CVE</span>
+                <span>🔒 {t.table.headers.cve}</span>
                 <SortIcon column="vulnerabilities" />
               </div>
             </th>
@@ -346,7 +351,7 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
               className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
             >
               <div className="flex items-center gap-2">
-                <span>🕐 MAJ</span>
+                <span>🕐 {t.table.headers.lastUpdate}</span>
                 <SortIcon column="lastUpdate" />
               </div>
             </th>
@@ -357,7 +362,7 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
               className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
             >
               <div className="flex items-center gap-2">
-                <span>⬇️ DL</span>
+                <span>⬇️ {t.table.headers.downloads}</span>
                 <SortIcon column="downloads" />
               </div>
             </th>
@@ -368,7 +373,7 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
               className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
             >
               <div className="flex items-center gap-2">
-                <span>⭐ Stars</span>
+                <span>⭐ {t.table.headers.stars}</span>
                 <SortIcon column="stars" />
               </div>
             </th>
@@ -376,7 +381,7 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
             {/* Actions */}
             {onRemove && (
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                Actions
+                {t.table.headers.actions}
               </th>
             )}
 
@@ -386,7 +391,7 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
               className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
             >
               <div className="flex items-center gap-2">
-                <span>⚖️ Licence</span>
+                <span>⚖️ {t.table.headers.license}</span>
                 <SortIcon column="license" />
               </div>
             </th>
@@ -411,7 +416,7 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
                       </div>
                       {dep.maintainers && dep.maintainers > 0 && (
                         <div className="text-xs text-gray-500">
-                          👥 {dep.maintainers} mainteneur{dep.maintainers > 1 ? 's' : ''}
+                          👥 {dep.maintainers} {dep.maintainers > 1 ? t.table.maintainerCountPlural : t.table.maintainerCount}
                         </div>
                       )}
                     </div>
@@ -521,7 +526,7 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
                     </span>
                   ) : (
                     <span className="px-2 py-1 text-xs font-medium rounded bg-green-100 text-green-800 border border-green-200">
-                      ✅ Aucune
+                      ✅ {t.table.none}
                     </span>
                   )}
                 </td>
@@ -534,7 +539,7 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
                     </div>
                     {dep.lastUpdate && (
                       <div className={`text-xs ${getUpdateFreshnessColor(daysSinceUpdate)}`}>
-                        il y a {daysSinceUpdate} jour{daysSinceUpdate > 1 ? 's' : ''}
+                        {t.table.daysAgo} {daysSinceUpdate} {daysSinceUpdate > 1 ? t.table.days : t.table.day}
                       </div>
                     )}
                   </div>
@@ -565,7 +570,7 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
                       onClick={() => onRemove(index)}
                       className="text-red-600 hover:text-red-900 font-medium transition-colors"
                     >
-                      ✕ Supprimer
+                      ✕ {t.actions.remove}
                     </button>
                     {typeof onShowAlternatives === 'function' && (
                       <button
@@ -593,13 +598,13 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
       {/* Footer avec statistiques */}
       <div className="bg-gray-50 px-6 py-3 border-t border-gray-200">
         <div className="text-sm text-gray-600">
-          <strong>{dependencies.length}</strong> package{dependencies.length > 1 ? 's' : ''} •{' '}
-          Trié par <strong>{sortColumn}</strong> ({sortDirection === 'asc' ? 'croissant' : 'décroissant'})
+          <strong>{dependencies.length}</strong> {t.table.packages} •{' '}
+          {t.table.sortedBy} <strong>{sortColumn}</strong> ({sortDirection === 'asc' ? t.table.ascending : t.table.descending})
         </div>
         <div className="mt-2 text-xs text-gray-500 bg-blue-50 border border-blue-200 rounded p-2">
-          📊 <strong>Pondération Global Risk:</strong> Security ×5, Operational ×3, Supply Chain ×1, Compliance ×1 (total=10)
+          📊 <strong>{t.table.weightingNote}</strong>
           <br />
-          📁 <strong>Fichier:</strong> <code className="bg-white px-1 rounded">src/services/analysis/MultiDimensionalRiskCalculator.ts</code>
+          📁 <strong>{t.table.weightingFile}:</strong> <code className="bg-white px-1 rounded">src/services/analysis/MultiDimensionalRiskCalculator.ts</code>
         </div>
       </div>
 

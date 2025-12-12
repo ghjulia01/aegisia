@@ -18,7 +18,7 @@ const DependencyGraph: React.FC<DependencyGraphProps> = ({
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
-  const { t } = useLanguage();
+  const { t, isLoading } = useLanguage();
 
   useEffect(() => {
     if (!svgRef.current) return;
@@ -182,6 +182,11 @@ const DependencyGraph: React.FC<DependencyGraphProps> = ({
   }, [data, width, height, onNodeClick]);
 
   const selected = data.nodes.find(n => n.id === selectedNode);
+
+  // Wait for translations to load
+  if (isLoading) {
+    return <div className="p-4 text-center">Loading translations...</div>;
+  }
 
   return (
     <div className="dependency-graph-container" style={{ position: 'relative', minHeight: 300 }}>

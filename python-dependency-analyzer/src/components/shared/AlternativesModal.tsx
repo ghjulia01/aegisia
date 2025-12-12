@@ -20,9 +20,17 @@ export const AlternativesModal: React.FC<Props> = ({
   recommendation,
   onSelectAlternative,
 }) => {
-  const { t } = useLanguage();
+  const { t, isLoading } = useLanguage();
   
   if (!isOpen || !recommendation) return null;
+  
+  if (isLoading) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-500 bg-opacity-75">
+        <div className="bg-white p-4 rounded">Loading translations...</div>
+      </div>
+    );
+  }
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-green-600';

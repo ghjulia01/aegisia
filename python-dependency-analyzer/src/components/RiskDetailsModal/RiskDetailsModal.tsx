@@ -16,9 +16,17 @@ export const RiskDetailsModal: React.FC<RiskDetailsModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  const { t } = useLanguage();
+  const { t, isLoading } = useLanguage();
   
   if (!isOpen) return null;
+  
+  if (isLoading) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-500 bg-opacity-75">
+        <div className="bg-white p-4 rounded">Loading translations...</div>
+      </div>
+    );
+  }
 
   const riskBreakdown = dependency.riskBreakdown;
   if (!riskBreakdown) return null;
@@ -234,7 +242,7 @@ export const RiskDetailsModal: React.FC<RiskDetailsModalProps> = ({
             {/* License Details */}
             {dependency.license && (
               <div id="license-compliance" className="mt-6 pt-6 border-t border-gray-200">
-                <h4 className="text-lg font-semibold text-gray-800 mb-3">⚖️ License & Compliance</h4>
+                <h4 className="text-lg font-semibold text-gray-800 mb-3">⚖️ {t.modal.riskDetails.licenseCompliance}</h4>
                 {(() => {
                   const licenseInfo = licenseService.getLicenseInfo(dependency.license);
                   const capabilities = licenseInfo.capabilities;

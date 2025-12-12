@@ -52,7 +52,7 @@ export const DependencyAnalyzer: React.FC = () => {
   };
   
 
-  const { t, currentLanguage, changeLanguage, availableLanguages } = useLanguage();
+  const { t, currentLanguage, changeLanguage, availableLanguages, isLoading } = useLanguage();
 
   /**
    * Gère l'analyse d'un package unique
@@ -105,6 +105,27 @@ export const DependencyAnalyzer: React.FC = () => {
     }
   }, [dependencies, dependencyGraph]);
 
+  const exportReport = (format: string) => {
+    const dataStr = JSON.stringify(dependencies, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+    const exportFileDefaultName = `dependency-report.${format}`;
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+  };
+
+  // Wait for translations to load
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-lg shadow-lg">
+          <div className="text-center">Loading translations...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
       <div className="max-w-7xl mx-auto">
@@ -114,9 +135,9 @@ export const DependencyAnalyzer: React.FC = () => {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                {t('title')}
+                {t.app.title}
               </h1>
-              <p className="text-gray-600">{t('subtitle')}</p>
+              <p className="text-gray-600">{t.app.subtitle}</p>
             </div>
             
             {/* Language Selector */}
@@ -143,12 +164,12 @@ export const DependencyAnalyzer: React.FC = () => {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                {t('inputLabel')}
+                {t.form.analyzeDependency}
               </label>
               <textarea
                 value={packageInput}
                 onChange={(e) => setPackageInput(e.target.value)}
-                placeholder={t('inputPlaceholder')}
+                placeholder={t.form.packagePlaceholder}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 rows={3}
                 disabled={isAnalyzing}
@@ -174,7 +195,7 @@ export const DependencyAnalyzer: React.FC = () => {
                 disabled={isAnalyzing || !packageInput.trim()}
                 className="flex-1 bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
               >
-                {isAnalyzing ? t('analyzing') : 'Analyze'}
+                {isAnalyzing ? t.actions.analyzing : t.actions.analyze}
               </button>
 
               {dependencies.length > 0 && (
@@ -183,7 +204,7 @@ export const DependencyAnalyzer: React.FC = () => {
                   disabled={isAnalyzing}
                   className="bg-gray-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-600 disabled:bg-gray-400 transition-colors"
                 >
-                  {t('clear')}
+                  {t.actions.cancel}
                 </button>
               )}
             </div>
@@ -192,7 +213,7 @@ export const DependencyAnalyzer: React.FC = () => {
             {isAnalyzing && (
               <div className="space-y-2">
                 <div className="flex justify-between text-sm text-gray-600">
-                  <span>{t('progress')}</span>
+                  <span>{t.messages.loading}</span>
                   <span>{progress.current} / {progress.total}</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
@@ -207,7 +228,7 @@ export const DependencyAnalyzer: React.FC = () => {
             {/* Error Display */}
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <p className="text-red-800 font-medium">{t('error')}</p>
+                <p className="text-red-800 font-medium">{t.messages.error}</p>
                 <p className="text-red-600 text-sm mt-1">{error}</p>
               </div>
             )}
@@ -218,27 +239,27 @@ export const DependencyAnalyzer: React.FC = () => {
         {dependencies.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
             <StatCard
-              label={t('totalPackages')}
+              label={t.stats.total}
               value={dependencies.length}
               color="blue"
             />
             <StatCard
-              label={t('criticalRisk')}
+              label={t.stats.criticalCount}
               value={stats.critical}
               color="red"
             />
             <StatCard
-              label={t('highRisk')}
+              label={t.risk.levels.high}
               value={stats.high}
               color="orange"
             />
             <StatCard
-              label={t('mediumRisk')}
+              label={t.risk.levels.moderate}
               value={stats.medium}
               color="yellow"
             />
             <StatCard
-              label={t('totalCVEs')}
+              label={t.stats.totalCVEs}
               value={stats.totalCVEs}
               color="purple"
             />
@@ -260,7 +281,7 @@ export const DependencyAnalyzer: React.FC = () => {
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                   }`}
                 >
-                  {t('tableView')}
+                  {t.tabs.tableView}
                 </button>
                 <button
                   onClick={() => setSelectedTab('chart')}
@@ -270,7 +291,7 @@ export const DependencyAnalyzer: React.FC = () => {
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                   }`}
                 >
-                  {t('chartView')}
+                  {t.tabs.chartView}
                 </button>
 
                 <button
@@ -301,7 +322,7 @@ export const DependencyAnalyzer: React.FC = () => {
                 onClick={() => exportReport('json')}
                 className="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors"
               >
-                {t('exportJSON')}
+                {t.actions.exportJSON}
               </button>
             </div>
 
@@ -335,10 +356,10 @@ export const DependencyAnalyzer: React.FC = () => {
               </svg>
             </div>
             <h3 className="text-xl font-semibold text-gray-700 mb-2">
-              {t('noResults')}
+              {t.messages.noResults}
             </h3>
             <p className="text-gray-500">
-              {t('noResultsDescription')}
+              {t.messages.noResultsDescription}
             </p>
           </div>
         )}
@@ -348,7 +369,7 @@ export const DependencyAnalyzer: React.FC = () => {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
             <div className="bg-white rounded-lg shadow-lg w-11/12 md:w-2/3 p-6">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold">Alternatives pour {selectedPackage}</h3>
+                <h3 className="text-xl font-bold">{t.alternatives.title} {selectedPackage}</h3>
                 <button onClick={() => setShowAlternativesModal(false)} className="text-gray-600">✕</button>
               </div>
               <div className="space-y-3 max-h-80 overflow-auto">
@@ -382,7 +403,7 @@ export const DependencyAnalyzer: React.FC = () => {
                     </div>
                   ))
                 ) : (
-                  <div className="text-gray-600">Aucune alternative trouvée pour le moment.</div>
+                  <div className="text-gray-600">{t.alternatives.noResults}</div>
                 )}
               </div>
             </div>

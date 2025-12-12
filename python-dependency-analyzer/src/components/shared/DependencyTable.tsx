@@ -10,7 +10,7 @@
 import React, { useState } from 'react';
 import type { Dependency } from '@/types';
 import { RiskDetailsModal } from '../RiskDetailsModal';
-import { RiskBreakdownDisplay } from '../RiskBreakdownDisplay';
+import { licenseService } from '@/services/compliance/LicenseService';
 
 interface Props {
   dependencies: Dependency[];
@@ -24,7 +24,11 @@ type SortColumn =
   | 'country'
   | 'type'
   | 'maintainer'
-  | 'riskScore'
+  | 'globalRisk'
+  | 'securityRisk'
+  | 'operationalRisk'
+  | 'complianceRisk'
+  | 'supplyChainRisk'
   | 'vulnerabilities'
   | 'lastUpdate'
   | 'downloads'
@@ -33,7 +37,7 @@ type SortColumn =
 type SortDirection = 'asc' | 'desc';
 
 export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => {
-  const [sortColumn, setSortColumn] = useState<SortColumn>('riskScore');
+  const [sortColumn, setSortColumn] = useState<SortColumn>('globalRisk');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [selectedDependency, setSelectedDependency] = useState<Dependency | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -76,9 +80,25 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
         aValue = a.version || '';
         bValue = b.version || '';
         break;
-      case 'riskScore':
-        aValue = a.riskScore || 0;
-        bValue = b.riskScore || 0;
+      case 'globalRisk':
+        aValue = a.riskBreakdown?.overall || a.riskScore || 0;
+        bValue = b.riskBreakdown?.overall || b.riskScore || 0;
+        break;
+      case 'securityRisk':
+        aValue = a.riskBreakdown?.security || 0;
+        bValue = b.riskBreakdown?.security || 0;
+        break;
+      case 'operationalRisk':
+        aValue = a.riskBreakdown?.operational || 0;
+        bValue = b.riskBreakdown?.operational || 0;
+        break;
+      case 'complianceRisk':
+        aValue = a.riskBreakdown?.compliance || 0;
+        bValue = b.riskBreakdown?.compliance || 0;
+        break;
+      case 'supplyChainRisk':
+        aValue = a.riskBreakdown?.supplyChain || 0;
+        bValue = b.riskBreakdown?.supplyChain || 0;
         break;
       case 'vulnerabilities':
         aValue = a.vulnerabilities?.length || 0;
@@ -233,20 +253,67 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
               </div>
             </th>
 
-            {/* Risk Score */}
+            {/* GLOBAL RISK (note /10) */}
             <th
-              onClick={() => handleSort('riskScore')}
-              className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+              onClick={() => handleSort('globalRisk')}
+              className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none bg-indigo-50"
             >
               <div className="flex items-center gap-2">
-                <span>⚠️ Risque</span>
-                <SortIcon column="riskScore" />
+                <span>🎯 Global Risk</span>
+                <SortIcon column="globalRisk" />
               </div>
             </th>
 
-            {/* Risk Breakdown (NEW) */}
+            {/* SECURITY RISK */}
+            <th
+              onClick={() => handleSort('securityRisk')}
+              className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+            >
+              <div className="flex items-center gap-1">
+                <span>🔒 Security</span>
+                <SortIcon column="securityRisk" />
+              </div>
+            </th>
+
+            {/* OPERATIONAL RISK */}
+            <th
+              onClick={() => handleSort('operationalRisk')}
+              className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+            >
+              <div className="flex items-center gap-1">
+                <span>⚙️ Operational</span>
+                <SortIcon column="operationalRisk" />
+              </div>
+            </th>
+
+            {/* COMPLIANCE CAPABILITIES (4 colonnes) */}
+            <th className="px-3 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider bg-purple-50">
+              ✅ Use
+            </th>
+            <th className="px-3 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider bg-purple-50">
+              ✏️ Modify
+            </th>
+            <th className="px-3 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider bg-purple-50">
+              💰 Sell
+            </th>
+            <th className="px-3 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider bg-purple-50">
+              ☁️ SaaS
+            </th>
+
+            {/* SUPPLY CHAIN RISK */}
+            <th
+              onClick={() => handleSort('supplyChainRisk')}
+              className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
+            >
+              <div className="flex items-center gap-1">
+                <span>🔗 Supply Chain</span>
+                <SortIcon column="supplyChainRisk" />
+              </div>
+            </th>
+
+            {/* RISK RADAR DETAIL (action button) */}
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-              📊 Détails Risque
+              📊 Risk Radar
             </th>
 
             {/* Vulnerabilities */}
@@ -360,27 +427,65 @@ export const DependencyTable: React.FC<Props> = ({ dependencies, onRemove }) => 
                   </div>
                 </td>
 
-                {/* Risk Score */}
-                <td className="px-6 py-4 whitespace-nowrap">
+                {/* GLOBAL RISK (note /10) */}
+                <td className="px-6 py-4 whitespace-nowrap bg-indigo-50">
                   <div className="flex items-center gap-2">
-                    <span className={`px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full border-2 ${getRiskColor(dep.riskScore)}`}>
-                      {getRiskEmoji(dep.riskScore)} {(dep.riskScore || 0).toFixed(1)}
+                    <span className={`px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full border-2 ${getRiskColor(dep.riskBreakdown?.overall || dep.riskScore)}`}>
+                      {getRiskEmoji(dep.riskBreakdown?.overall || dep.riskScore)} {(dep.riskBreakdown?.overall || dep.riskScore || 0).toFixed(1)}/10
                     </span>
                   </div>
                 </td>
 
-                {/* Risk Breakdown (NEW) */}
+                {/* SECURITY RISK */}
+                <td className="px-4 py-4 whitespace-nowrap">
+                  {dep.riskBreakdown ? (
+                    <span className={`px-2 py-1 text-xs font-medium rounded ${getRiskColor(dep.riskBreakdown.security)}`}>
+                      {dep.riskBreakdown.security.toFixed(1)}
+                    </span>
+                  ) : <span className="text-xs text-gray-400">-</span>}
+                </td>
+
+                {/* OPERATIONAL RISK */}
+                <td className="px-4 py-4 whitespace-nowrap">
+                  {dep.riskBreakdown ? (
+                    <span className={`px-2 py-1 text-xs font-medium rounded ${getRiskColor(dep.riskBreakdown.operational)}`}>
+                      {dep.riskBreakdown.operational.toFixed(1)}
+                    </span>
+                  ) : <span className="text-xs text-gray-400">-</span>}
+                </td>
+
+                {/* COMPLIANCE CAPABILITIES (4 colonnes) */}
+                <td className="px-3 py-4 whitespace-nowrap text-center bg-purple-50">
+                  {licenseService.getCapabilityIconEnhanced(licenseService.canUse(dep.license))}
+                </td>
+                <td className="px-3 py-4 whitespace-nowrap text-center bg-purple-50">
+                  {licenseService.getCapabilityIconEnhanced(licenseService.canModify(dep.license))}
+                </td>
+                <td className="px-3 py-4 whitespace-nowrap text-center bg-purple-50">
+                  {licenseService.getCapabilityIconEnhanced(licenseService.canSell(dep.license))}
+                </td>
+                <td className="px-3 py-4 whitespace-nowrap text-center bg-purple-50">
+                  {licenseService.getCapabilityIconEnhanced(licenseService.canUseSaaS(dep.license))}
+                </td>
+
+                {/* SUPPLY CHAIN RISK */}
+                <td className="px-4 py-4 whitespace-nowrap">
+                  {dep.riskBreakdown ? (
+                    <span className={`px-2 py-1 text-xs font-medium rounded ${getRiskColor(dep.riskBreakdown.supplyChain)}`}>
+                      {dep.riskBreakdown.supplyChain.toFixed(1)}
+                    </span>
+                  ) : <span className="text-xs text-gray-400">-</span>}
+                </td>
+
+                {/* RISK RADAR DETAIL (action button) */}
                 <td className="px-6 py-4 whitespace-nowrap">
                   {dep.riskBreakdown ? (
-                    <div className="flex flex-col gap-2">
-                      <RiskBreakdownDisplay riskBreakdown={dep.riskBreakdown} compact />
-                      <button
-                        onClick={() => openRiskDetails(dep)}
-                        className="text-xs text-indigo-600 hover:text-indigo-900 font-medium transition-colors"
-                      >
-                        View Details →
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => openRiskDetails(dep)}
+                      className="px-3 py-1.5 text-xs bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors font-medium shadow-sm"
+                    >
+                      📊 Voir Détails
+                    </button>
                   ) : (
                     <span className="text-xs text-gray-400">N/A</span>
                   )}

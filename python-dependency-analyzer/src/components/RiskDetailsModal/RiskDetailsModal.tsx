@@ -2,6 +2,7 @@ import React from 'react';
 import { Dependency } from '../../types';
 import { RiskRadarChart } from '../RiskRadarChart';
 import { RiskBreakdownDisplay } from '../RiskBreakdownDisplay';
+import { licenseService } from '@/services/compliance/LicenseService';
 
 interface RiskDetailsModalProps {
   dependency: Dependency;
@@ -202,6 +203,94 @@ export const RiskDetailsModal: React.FC<RiskDetailsModalProps> = ({
                     </div>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* License Details */}
+            {dependency.license && (
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <h4 className="text-lg font-semibold text-gray-800 mb-3">⚖️ License & Compliance</h4>
+                {(() => {
+                  const licenseInfo = licenseService.getLicenseInfo(dependency.license);
+                  const capabilities = licenseInfo.capabilities;
+                  const obligations = licenseInfo.obligations;
+                  const risk = licenseInfo.risk_level;
+
+                  const getRiskBadgeColor = () => {
+                    switch (risk) {
+                      case 'LOW': return 'bg-green-100 text-green-800 border-green-300';
+                      case 'MEDIUM': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+                      case 'HIGH': return 'bg-orange-100 text-orange-800 border-orange-300';
+                      case 'CRITICAL': return 'bg-red-100 text-red-800 border-red-300';
+                      default: return 'bg-gray-100 text-gray-800 border-gray-300';
+                    }
+                  };
+
+                  return (
+                    <>
+                      {/* License Header */}
+                      <div className="flex items-center gap-3 mb-4">
+                        <span className={`px-3 py-1 text-sm font-semibold rounded-full border-2 ${getRiskBadgeColor()}`}>
+                          {licenseInfo.spdx}
+                        </span>
+                        <span className="text-xs text-gray-500">{licenseInfo.category.replace(/_/g, ' ')}</span>
+                        <span className={`ml-auto px-3 py-1 text-xs font-bold rounded border-2 ${getRiskBadgeColor()}`}>
+                          {risk} RISK
+                        </span>
+                      </div>
+
+                      {/* License Notes */}
+                      <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">
+                          {licenseInfo.notes.fr}
+                        </p>
+                      </div>
+
+                      {/* Capabilities & Obligations Grid */}
+                      <div className="grid md:grid-cols-2 gap-4">
+                        {/* Capabilities */}
+                        <div className="border-2 border-green-200 rounded-lg p-4 bg-green-50">
+                          <h5 className="font-semibold text-green-900 mb-2 text-sm">✅ Capabilities</h5>
+                          <div className="space-y-1 text-xs">
+                            <div className="flex justify-between">
+                              <span>Use</span>
+                              <span className="font-bold">{capabilities.use ? '✅' : '❌'}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Modify</span>
+                              <span className="font-bold">{capabilities.modify ? '✅' : '❌'}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Sell</span>
+                              <span className="font-bold">{capabilities.sell ? '✅' : '❌'}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>SaaS</span>
+                              <span className="font-bold">{capabilities.saas ? '✅' : '❌'}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Obligations */}
+                        <div className="border-2 border-orange-200 rounded-lg p-4 bg-orange-50">
+                          <h5 className="font-semibold text-orange-900 mb-2 text-sm">⚠️ Obligations</h5>
+                          <div className="space-y-1 text-xs">
+                            {obligations.attribution && <div className="flex items-center gap-1"><span>⚠️</span> Attribution required</div>}
+                            {obligations.include_license && <div className="flex items-center gap-1"><span>⚠️</span> Include license text</div>}
+                            {obligations.state_changes && <div className="flex items-center gap-1"><span>⚠️</span> State changes</div>}
+                            {obligations.disclose_source && <div className="flex items-center gap-1"><span className="text-red-600">🚫</span> Disclose source (copyleft)</div>}
+                            {obligations.share_alike && <div className="flex items-center gap-1"><span className="text-red-600">🚫</span> Share-alike required</div>}
+                            {obligations.network_copyleft && <div className="flex items-center gap-1"><span className="text-red-600">⛔</span> Network copyleft (SaaS!)</div>}
+                            {!obligations.attribution && !obligations.include_license && !obligations.state_changes && 
+                             !obligations.disclose_source && !obligations.share_alike && !obligations.network_copyleft && (
+                              <div className="text-green-600 font-medium">✅ No specific obligations</div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
             )}
           </div>

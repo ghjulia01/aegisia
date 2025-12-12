@@ -14,6 +14,8 @@ import { MultiDimensionalRiskCalculator } from '../services/analysis/MultiDimens
 // ==========================================
 
 import { AlternativeFinder as AlternativeFinderService } from '../services/analysis/AlternativeFinder';
+import { AlternativeRecommender } from '../services/analysis/AlternativeRecommender';
+import { PackageProfiler } from '../services/analysis/PackageProfiler';
 
 // Local fallback for common alternatives (can be extended later)
 const COMMON_ALTERNATIVES: Record<string, string[]> = {};
@@ -59,49 +61,87 @@ export const useDependencyAnalysis = () => {
   };
 
   const findAlternatives = useCallback(
-    async (packageName: string, currentRisk: number, filters?: AltFilters): Promise<AlternativePackage[]> => {
+    async (packageName: string, currentRisk: number, filters?: AltFilters, pypiData?: any, githubData?: any): Promise<AlternativePackage[]> => {
       try {
-        const service = new AlternativeFinderService();
-        const results = await service.findAlternatives(packageName, 8, filters as any);
-        return results as AlternativePackage[];
-      } catch (e) {
-        console.warn('[Alternatives] Service failed, falling back to commons', e);
-        const commonAlts = COMMON_ALTERNATIVES[packageName.toLowerCase()] || [];
-        const res: AlternativePackage[] = [];
-        for (const name of commonAlts.slice(0, 3)) {
+        console.log(`[Alternatives V3] Finding alternatives for ${packageName} with intelligent profiling...`);
+        
+        // Use new AlternativeRecommender with profiling
+        const recommender = new AlternativeRecommender();
+        
+        // Get PyPI data if not provided
+        const pkgData = pypiData || await pypiClient.getPackageMetadata(packageName);
+        const ghData = githubData;
+        
+        // Find alternatives with profiling
+        const recommendation = await recommender.findAlternatives(packageName, pkgData, ghData);
+        
+        console.log(`[Alternatives V3] Found ${recommendation.alternatives.length} alternatives:`);
+        console.log(`  - Best Overall: ${recommendation.buckets['best-overall'].length}`);
+        console.log(`  - Performance: ${recommendation.buckets['performance'].length}`);
+        console.log(`  - Lightweight: ${recommendation.buckets['lightweight'].length}`);
+        console.log(`  - Specialized: ${recommendation.buckets['specialized'].length}`);
+        
+        // Convert to AlternativePackage format
+        const alternatives: AlternativePackage[] = [];
+        
+        for (const alt of recommendation.alternatives.slice(0, 10)) {
           try {
-            const meta = await pypiClient.getPackageMetadata(name);
-            const gh = await githubClient.extractFromHomepage(meta.info.home_page || meta.info.project_url);
-            const alt: AlternativePackage = {
-              name,
-              version: meta.info.version,
+            // Fetch full data for each alternative
+            const altMeta = await pypiClient.getPackageMetadata(alt.name);
+            const altGh = await githubClient.extractFromHomepage(altMeta.info.home_page || altMeta.info.project_urls?.Homepage);
+            
+            const altPackage: AlternativePackage = {
+              name: alt.name,
+              version: altMeta.info.version,
               type: 'package',
               country: 'USA',
               openSource: true,
-              lastUpdate: meta.releases[meta.info.version]?.[0]?.upload_time || '',
-              maintainer: meta.info.author || meta.info.maintainer || 'Unknown',
-              license: meta.info.license || 'Not specified',
+              lastUpdate: altMeta.releases[altMeta.info.version]?.[0]?.upload_time || '',
+              maintainer: altMeta.info.author || altMeta.info.maintainer || 'Unknown',
+              license: pypiClient.extractLicense(altMeta.info) || 'Not specified',
               pypiData: {
-                version: meta.info.version,
-                author: meta.info.author || '',
-                maintainer: meta.info.maintainer || '',
-                license: meta.info.license || '',
-                summary: meta.info.summary || '',
-                homeUrl: meta.info.home_page || meta.info.project_url || '',
-                releaseDate: meta.releases[meta.info.version]?.[0]?.upload_time || ''
+                version: altMeta.info.version,
+                author: altMeta.info.author || '',
+                maintainer: altMeta.info.maintainer || '',
+                license: pypiClient.extractLicense(altMeta.info) || '',
+                summary: altMeta.info.summary || alt.summary,
+                homeUrl: altMeta.info.home_page || altMeta.info.project_url || '',
+                releaseDate: altMeta.releases[altMeta.info.version]?.[0]?.upload_time || ''
               },
-              githubData: gh || undefined,
-              enrichedData: { githubData: gh || undefined },
+              githubData: altGh || undefined,
+              enrichedData: { githubData: altGh || undefined },
               vulnerabilities: [],
               transitiveDeps: [],
-              riskScore: 5,
+              riskScore: Math.max(1, 10 - (alt.score / 10)), // Convert score to risk (inverted)
+              similarityScore: alt.breakdown.similarity,
+              reasons: [
+                alt.whyRecommended,
+                `Bucket: ${alt.bucketLabel}`,
+                `Score: ${alt.score}/100`
+              ]
             };
-            if (alt.riskScore < currentRisk) res.push(alt);
+            
+            alternatives.push(altPackage);
           } catch (err) {
-            // ignore
+            console.warn(`[Alternatives V3] Failed to fetch data for ${alt.name}:`, err);
           }
         }
-        return res;
+        
+        console.log(`[Alternatives V3] Successfully processed ${alternatives.length} alternatives`);
+        return alternatives;
+        
+      } catch (e) {
+        console.warn('[Alternatives V3] Failed, falling back to V2/V1', e);
+        
+        // Fallback to old service
+        try {
+          const service = new AlternativeFinderService();
+          const results = await service.findAlternatives(packageName, 8, filters as any);
+          return results as AlternativePackage[];
+        } catch (e2) {
+          console.warn('[Alternatives] All services failed', e2);
+          return [];
+        }
       }
     },
     [pypiClient, githubClient]
@@ -123,6 +163,8 @@ export const useDependencyAnalysis = () => {
         const license = pypiClient.extractLicense(pypiData.info) || 'Not specified';
         const homeUrl = pypiClient.getGitHubUrl(pypiData.info) || pypiData.info.home_page || (pypiData.info as any).project_urls?.homepage || pypiData.info.project_url;
         
+        console.log(`[Analysis] Package: ${packageName}, License: ${license}, Homepage: ${homeUrl}`);
+        
         // Extract maintainers from author_email or maintainer_email
         const maintainers = pypiClient.extractMaintainers((pypiData.info as any).author_email || (pypiData.info as any).maintainer_email);
         const maintainerDisplay = maintainers.length > 0 ? maintainers[0] : pypiData.info.author || 'Unknown';
@@ -130,6 +172,7 @@ export const useDependencyAnalysis = () => {
         
         setStatus(`🔍 Checking GitHub repository...`);
         const githubData = await githubClient.extractFromHomepage(homeUrl);
+        console.log(`[Analysis] GitHub data for ${packageName}:`, githubData ? `${githubData.stars} stars` : 'No GitHub data');
 
         setStatus(`🔒 Scanning for vulnerabilities...`);
         const cveData = await cveClient.searchCVEs(packageName).catch(() => ({ details: [] } as any));
@@ -182,7 +225,7 @@ export const useDependencyAnalysis = () => {
         );
 
         setStatus(`🔄 Finding safer alternatives...`);
-        const alts = await findAlternatives(packageName, dependency.riskScore, filters);
+        const alts = await findAlternatives(packageName, dependency.riskScore, filters, pypiData, githubData || undefined);
 
         setDependencies(prev => [...prev, dependency]);
         setAlternatives(prev => ({ ...prev, [packageName]: alts }));

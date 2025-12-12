@@ -3,38 +3,41 @@ import { DependencyAnalyzer } from './components/DependencyAnalyzer';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import PackageAnalysis from './components/PackageAnalysis/PackageAnalysis';
+import { DependencyProvider } from './contexts/DependencyContext';
 const PackageAlternative = React.lazy(() => import('./components/PackageAlternative/PackageAlternative'));
 
 function App() {
   return (
     <ErrorBoundary>
-      <BrowserRouter>
-        <div className="bg-white shadow p-4 mb-4">
-          <div className="max-w-7xl mx-auto flex gap-4">
-            <Link to="/" className="px-3 py-2 rounded bg-indigo-100 hover:bg-indigo-200">Home</Link>
-            <Link to="/package-analysis" className="px-3 py-2 rounded bg-indigo-100 hover:bg-indigo-200">Package Analysis</Link>
-            <Link to="/package-alternative" className="px-3 py-2 rounded bg-indigo-100 hover:bg-indigo-200">Package Alternative</Link>
-          </div>
-        </div>
-
-        <Suspense fallback={
-          <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6 flex items-center justify-center">
-            <div className="bg-white rounded-lg shadow-lg p-6">
-              <p className="text-lg text-gray-600">Chargement...</p>
+      <DependencyProvider>
+        <BrowserRouter>
+          <div className="bg-white shadow p-4 mb-4">
+            <div className="max-w-7xl mx-auto flex gap-4">
+              <Link to="/" className="px-3 py-2 rounded bg-indigo-100 hover:bg-indigo-200">Home</Link>
+              <Link to="/package-analysis" className="px-3 py-2 rounded bg-indigo-100 hover:bg-indigo-200">Package Analysis</Link>
+              <Link to="/package-alternative" className="px-3 py-2 rounded bg-indigo-100 hover:bg-indigo-200">Package Alternative</Link>
             </div>
           </div>
-        }>
-          <Routes>
-            <Route path="/" element={<DependencyAnalyzer />} />
-            <Route path="/package-analysis" element={<PackageAnalysis />} />
-              <Route path="/package-alternative" element={
-                <React.Suspense fallback={<div>Loading...</div>}>
-                  <PackageAlternative />
-                </React.Suspense>
-              } />
-          </Routes>
-        </Suspense>
-      </BrowserRouter>
+
+          <Suspense fallback={
+            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6 flex items-center justify-center">
+              <div className="bg-white rounded-lg shadow-lg p-6">
+                <p className="text-lg text-gray-600">Chargement...</p>
+              </div>
+            </div>
+          }>
+            <Routes>
+              <Route path="/" element={<DependencyAnalyzer />} />
+              <Route path="/package-analysis" element={<PackageAnalysis />} />
+                <Route path="/package-alternative" element={
+                  <React.Suspense fallback={<div>Loading...</div>}>
+                    <PackageAlternative />
+                  </React.Suspense>
+                } />
+            </Routes>
+          </Suspense>
+        </BrowserRouter>
+      </DependencyProvider>
     </ErrorBoundary>
   );
 }

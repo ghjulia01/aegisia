@@ -1,0 +1,987 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedFor": "Aegisia",
+  "capabilities": [
+    "use",
+    "copy",
+    "modify",
+    "distribute",
+    "sell",
+    "saas",
+    "private_use"
+  ],
+  "obligations": [
+    "attribution",
+    "include_license",
+    "include_notice",
+    "state_changes",
+    "disclose_source",
+    "share_alike",
+    "patent_grant",
+    "patent_retaliation",
+    "network_copyleft",
+    "no_trademark_use",
+    "no_endorsement",
+    "warranty_disclaimer",
+    "source_offer",
+    "file_level_copyleft"
+  ],
+  "licenses": {
+    "UNKNOWN": {
+      "spdx": "UNKNOWN",
+      "category": "UNKNOWN",
+      "risk_level": "CRITICAL",
+      "capabilities": {
+        "use": false,
+        "copy": false,
+        "modify": false,
+        "distribute": false,
+        "sell": false,
+        "saas": false,
+        "private_use": false
+      },
+      "obligations": {
+        "attribution": false,
+        "include_license": false,
+        "include_notice": false,
+        "state_changes": false,
+        "disclose_source": false,
+        "share_alike": false,
+        "patent_grant": false,
+        "patent_retaliation": false,
+        "network_copyleft": false,
+        "no_trademark_use": false,
+        "no_endorsement": false,
+        "warranty_disclaimer": false,
+        "source_offer": false,
+        "file_level_copyleft": false
+      },
+      "summary": {
+        "fr": "Licence non identifiée ou non spécifiée. Usage commercial déconseillé sans clarification.",
+        "en": "Unknown or unspecified license. Commercial use discouraged without clarification."
+      },
+      "notes": {
+        "fr": "⚠️ Licence non définie\nAucun droit explicite d'utilisation ou de redistribution.\nUsage commercial déconseillé sans validation juridique.",
+        "en": "⚠️ Undefined License\nNo explicit rights for use or redistribution.\nCommercial use discouraged without legal validation."
+      },
+      "aliases": [
+        "Not specified",
+        "Not specified or unknown",
+        "Unknown",
+        "UNLICENSED",
+        "NOASSERTION",
+        "Proprietary",
+        "N/A"
+      ]
+    },
+    "MIT": {
+      "spdx": "MIT",
+      "category": "PERMISSIVE",
+      "risk_level": "LOW",
+      "capabilities": {
+        "use": true,
+        "copy": true,
+        "modify": true,
+        "distribute": true,
+        "sell": true,
+        "saas": true,
+        "private_use": true
+      },
+      "obligations": {
+        "attribution": true,
+        "include_license": true,
+        "include_notice": true,
+        "state_changes": false,
+        "disclose_source": false,
+        "share_alike": false,
+        "patent_grant": false,
+        "patent_retaliation": false,
+        "network_copyleft": false,
+        "no_trademark_use": false,
+        "no_endorsement": false,
+        "warranty_disclaimer": true,
+        "source_offer": false,
+        "file_level_copyleft": false
+      },
+      "summary": {
+        "fr": "Utilisation commerciale libre. Conserver la notice et le texte de la licence.",
+        "en": "Free commercial use. Keep copyright notice and license text."
+      },
+      "notes": {
+        "fr": "✅ MIT\nUtilisation commerciale libre, y compris SaaS.\nConserver la notice de copyright et le texte de la licence.",
+        "en": "✅ MIT\nFree commercial use, including SaaS.\nKeep copyright notice and license text."
+      },
+      "aliases": [
+        "MIT License",
+        "The MIT License (MIT)"
+      ]
+    },
+    "ISC": {
+      "spdx": "ISC",
+      "category": "PERMISSIVE",
+      "risk_level": "LOW",
+      "capabilities": {
+        "use": true,
+        "copy": true,
+        "modify": true,
+        "distribute": true,
+        "sell": true,
+        "saas": true,
+        "private_use": true
+      },
+      "obligations": {
+        "attribution": true,
+        "include_license": true,
+        "include_notice": true,
+        "state_changes": false,
+        "disclose_source": false,
+        "share_alike": false,
+        "patent_grant": false,
+        "patent_retaliation": false,
+        "network_copyleft": false,
+        "no_trademark_use": false,
+        "no_endorsement": false,
+        "warranty_disclaimer": true,
+        "source_offer": false,
+        "file_level_copyleft": false
+      },
+      "summary": {
+        "fr": "Permissive (proche MIT). Mention + licence à conserver.",
+        "en": "Permissive (MIT-like). Keep notice and license."
+      },
+      "notes": {
+        "fr": "✅ ISC\nLicence permissive similaire à MIT.\nMention et licence à conserver.",
+        "en": "✅ ISC\nPermissive license similar to MIT.\nKeep notice and license."
+      },
+      "aliases": [
+        "ISC License"
+      ]
+    },
+    "BSD-2-Clause": {
+      "spdx": "BSD-2-Clause",
+      "category": "PERMISSIVE",
+      "risk_level": "LOW",
+      "capabilities": {
+        "use": true,
+        "copy": true,
+        "modify": true,
+        "distribute": true,
+        "sell": true,
+        "saas": true,
+        "private_use": true
+      },
+      "obligations": {
+        "attribution": true,
+        "include_license": true,
+        "include_notice": true,
+        "state_changes": false,
+        "disclose_source": false,
+        "share_alike": false,
+        "patent_grant": false,
+        "patent_retaliation": false,
+        "network_copyleft": false,
+        "no_trademark_use": false,
+        "no_endorsement": false,
+        "warranty_disclaimer": true,
+        "source_offer": false,
+        "file_level_copyleft": false
+      },
+      "summary": {
+        "fr": "Licence permissive. Mention + licence à conserver.",
+        "en": "Permissive license. Keep notice and license."
+      },
+      "notes": {
+        "fr": "✅ BSD-2-Clause\nLicence permissive.\nMention et licence à conserver.",
+        "en": "✅ BSD-2-Clause\nPermissive license.\nKeep notice and license."
+      },
+      "aliases": [
+        "BSD 2-Clause",
+        "BSD-2",
+        "BSD-2-Clause License"
+      ]
+    },
+    "BSD-3-Clause": {
+      "spdx": "BSD-3-Clause",
+      "category": "PERMISSIVE",
+      "risk_level": "LOW",
+      "capabilities": {
+        "use": true,
+        "copy": true,
+        "modify": true,
+        "distribute": true,
+        "sell": true,
+        "saas": true,
+        "private_use": true
+      },
+      "obligations": {
+        "attribution": true,
+        "include_license": true,
+        "include_notice": true,
+        "state_changes": false,
+        "disclose_source": false,
+        "share_alike": false,
+        "patent_grant": false,
+        "patent_retaliation": false,
+        "network_copyleft": false,
+        "no_trademark_use": false,
+        "no_endorsement": true,
+        "warranty_disclaimer": true,
+        "source_offer": false,
+        "file_level_copyleft": false
+      },
+      "summary": {
+        "fr": "Permissive. Interdit d'utiliser le nom des auteurs pour promouvoir sans autorisation.",
+        "en": "Permissive. No endorsement without permission."
+      },
+      "notes": {
+        "fr": "✅ BSD-3-Clause\nLicence permissive.\nInterdit d'utiliser le nom des auteurs pour promouvoir sans autorisation.",
+        "en": "✅ BSD-3-Clause\nPermissive license.\nNo endorsement without permission."
+      },
+      "aliases": [
+        "BSD 3-Clause",
+        "BSD-3",
+        "BSD 3-Clause License",
+        "BSD 3-Clause License Copyright"
+      ]
+    },
+    "Apache-2.0": {
+      "spdx": "Apache-2.0",
+      "category": "PERMISSIVE",
+      "risk_level": "LOW",
+      "capabilities": {
+        "use": true,
+        "copy": true,
+        "modify": true,
+        "distribute": true,
+        "sell": true,
+        "saas": true,
+        "private_use": true
+      },
+      "obligations": {
+        "attribution": true,
+        "include_license": true,
+        "include_notice": true,
+        "state_changes": true,
+        "disclose_source": false,
+        "share_alike": false,
+        "patent_grant": true,
+        "patent_retaliation": true,
+        "network_copyleft": false,
+        "no_trademark_use": true,
+        "no_endorsement": false,
+        "warranty_disclaimer": true,
+        "source_offer": false,
+        "file_level_copyleft": false
+      },
+      "summary": {
+        "fr": "Permissive avec clause brevets. Conserver NOTICE + licence et indiquer les modifications.",
+        "en": "Permissive with patent grant. Keep NOTICE + license and state changes."
+      },
+      "notes": {
+        "fr": "✅ Apache-2.0\nLicence permissive avec clause brevets.\nConserver NOTICE + licence et indiquer les modifications.",
+        "en": "✅ Apache-2.0\nPermissive license with patent grant.\nKeep NOTICE + license and state changes."
+      },
+      "aliases": [
+        "Apache 2.0",
+        "Apache License 2.0",
+        "Apache License, Version 2.0",
+        "Apache-2.0 License"
+      ]
+    },
+    "Unlicense": {
+      "spdx": "Unlicense",
+      "category": "PUBLIC_DOMAIN_LIKE",
+      "risk_level": "LOW",
+      "capabilities": {
+        "use": true,
+        "copy": true,
+        "modify": true,
+        "distribute": true,
+        "sell": true,
+        "saas": true,
+        "private_use": true
+      },
+      "obligations": {
+        "attribution": false,
+        "include_license": false,
+        "include_notice": false,
+        "state_changes": false,
+        "disclose_source": false,
+        "share_alike": false,
+        "patent_grant": false,
+        "patent_retaliation": false,
+        "network_copyleft": false,
+        "no_trademark_use": false,
+        "no_endorsement": false,
+        "warranty_disclaimer": true,
+        "source_offer": false,
+        "file_level_copyleft": false
+      },
+      "summary": {
+        "fr": "Domaine public-like. Très permissif (selon juridictions).",
+        "en": "Public-domain-like. Very permissive (jurisdiction-dependent)."
+      },
+      "notes": {
+        "fr": "✅ Unlicense\nDomaine public-like. Très permissif (selon juridictions).",
+        "en": "✅ Unlicense\nPublic-domain-like. Very permissive (jurisdiction-dependent)."
+      },
+      "aliases": [
+        "The Unlicense"
+      ]
+    },
+    "CC0-1.0": {
+      "spdx": "CC0-1.0",
+      "category": "PUBLIC_DOMAIN_LIKE",
+      "risk_level": "LOW",
+      "capabilities": {
+        "use": true,
+        "copy": true,
+        "modify": true,
+        "distribute": true,
+        "sell": true,
+        "saas": true,
+        "private_use": true
+      },
+      "obligations": {
+        "attribution": false,
+        "include_license": false,
+        "include_notice": false,
+        "state_changes": false,
+        "disclose_source": false,
+        "share_alike": false,
+        "patent_grant": false,
+        "patent_retaliation": false,
+        "network_copyleft": false,
+        "no_trademark_use": false,
+        "no_endorsement": false,
+        "warranty_disclaimer": true,
+        "source_offer": false,
+        "file_level_copyleft": false
+      },
+      "summary": {
+        "fr": "Renonciation de droits (CC0). Très permissif.",
+        "en": "Rights waiver (CC0). Very permissive."
+      },
+      "notes": {
+        "fr": "✅ CC0-1.0\nRenonciation de droits (CC0). Très permissif.",
+        "en": "✅ CC0-1.0\nRights waiver (CC0). Very permissive."
+      },
+      "aliases": [
+        "CC0",
+        "Creative Commons Zero v1.0 Universal"
+      ]
+    },
+    "WTFPL": {
+      "spdx": "WTFPL",
+      "category": "PERMISSIVE",
+      "risk_level": "MEDIUM",
+      "capabilities": {
+        "use": true,
+        "copy": true,
+        "modify": true,
+        "distribute": true,
+        "sell": true,
+        "saas": true,
+        "private_use": true
+      },
+      "obligations": {
+        "attribution": false,
+        "include_license": true,
+        "include_notice": false,
+        "state_changes": false,
+        "disclose_source": false,
+        "share_alike": false,
+        "patent_grant": false,
+        "patent_retaliation": false,
+        "network_copyleft": false,
+        "no_trademark_use": false,
+        "no_endorsement": false,
+        "warranty_disclaimer": true,
+        "source_offer": false,
+        "file_level_copyleft": false
+      },
+      "summary": {
+        "fr": "Très permissif mais licence atypique. Revue juridique conseillée en entreprise.",
+        "en": "Very permissive but atypical license. Legal review recommended in enterprises."
+      },
+      "notes": {
+        "fr": "⚠️ WTFPL\nTrès permissif mais licence atypique.\nRevue juridique conseillée en entreprise.",
+        "en": "⚠️ WTFPL\nVery permissive but atypical license.\nLegal review recommended in enterprises."
+      },
+      "aliases": [
+        "Do What The F*ck You Want To Public License"
+      ]
+    },
+    "MPL-2.0": {
+      "spdx": "MPL-2.0",
+      "category": "WEAK_COPYLEFT",
+      "risk_level": "MEDIUM",
+      "capabilities": {
+        "use": true,
+        "copy": true,
+        "modify": true,
+        "distribute": true,
+        "sell": true,
+        "saas": true,
+        "private_use": true
+      },
+      "obligations": {
+        "attribution": true,
+        "include_license": true,
+        "include_notice": true,
+        "state_changes": true,
+        "disclose_source": true,
+        "share_alike": false,
+        "patent_grant": true,
+        "patent_retaliation": true,
+        "network_copyleft": false,
+        "no_trademark_use": false,
+        "no_endorsement": false,
+        "warranty_disclaimer": true,
+        "source_offer": false,
+        "file_level_copyleft": true
+      },
+      "summary": {
+        "fr": "Copyleft au niveau fichier : les fichiers modifiés doivent être publiés lors de redistribution.",
+        "en": "File-level copyleft: modified files must be disclosed upon redistribution."
+      },
+      "notes": {
+        "fr": "⚠️ MPL-2.0\nCopyleft au niveau fichier.\nLes fichiers modifiés doivent être publiés lors de redistribution.",
+        "en": "⚠️ MPL-2.0\nFile-level copyleft.\nModified files must be disclosed upon redistribution."
+      },
+      "aliases": [
+        "Mozilla Public License 2.0"
+      ]
+    },
+    "EPL-2.0": {
+      "spdx": "EPL-2.0",
+      "category": "WEAK_COPYLEFT",
+      "risk_level": "MEDIUM",
+      "capabilities": {
+        "use": true,
+        "copy": true,
+        "modify": true,
+        "distribute": true,
+        "sell": true,
+        "saas": true,
+        "private_use": true
+      },
+      "obligations": {
+        "attribution": true,
+        "include_license": true,
+        "include_notice": true,
+        "state_changes": true,
+        "disclose_source": true,
+        "share_alike": false,
+        "patent_grant": true,
+        "patent_retaliation": true,
+        "network_copyleft": false,
+        "no_trademark_use": false,
+        "no_endorsement": false,
+        "warranty_disclaimer": true,
+        "source_offer": false,
+        "file_level_copyleft": true
+      },
+      "summary": {
+        "fr": "Copyleft faible (file-level) avec clauses brevets. Revue conseillée selon distribution.",
+        "en": "Weak (file-level) copyleft with patent terms. Review recommended depending on distribution."
+      },
+      "notes": {
+        "fr": "⚠️ EPL-2.0\nCopyleft faible (file-level) avec clauses brevets.\nRevue conseillée selon distribution.",
+        "en": "⚠️ EPL-2.0\nWeak (file-level) copyleft with patent terms.\nReview recommended depending on distribution."
+      },
+      "aliases": [
+        "Eclipse Public License 2.0",
+        "EPL 2.0"
+      ]
+    },
+    "CDDL-1.0": {
+      "spdx": "CDDL-1.0",
+      "category": "WEAK_COPYLEFT",
+      "risk_level": "MEDIUM",
+      "capabilities": {
+        "use": true,
+        "copy": true,
+        "modify": true,
+        "distribute": true,
+        "sell": true,
+        "saas": true,
+        "private_use": true
+      },
+      "obligations": {
+        "attribution": true,
+        "include_license": true,
+        "include_notice": true,
+        "state_changes": true,
+        "disclose_source": true,
+        "share_alike": false,
+        "patent_grant": true,
+        "patent_retaliation": true,
+        "network_copyleft": false,
+        "no_trademark_use": false,
+        "no_endorsement": false,
+        "warranty_disclaimer": true,
+        "source_offer": false,
+        "file_level_copyleft": true
+      },
+      "summary": {
+        "fr": "Copyleft faible au niveau fichier. Peut être incompatible avec GPL : revue conseillée.",
+        "en": "Weak file-level copyleft. May be GPL-incompatible: review recommended."
+      },
+      "notes": {
+        "fr": "⚠️ CDDL-1.0\nCopyleft faible au niveau fichier.\nPeut être incompatible avec GPL : revue conseillée.",
+        "en": "⚠️ CDDL-1.0\nWeak file-level copyleft.\nMay be GPL-incompatible: review recommended."
+      },
+      "aliases": [
+        "Common Development and Distribution License 1.0",
+        "CDDL"
+      ]
+    },
+    "LGPL-2.1-only": {
+      "spdx": "LGPL-2.1-only",
+      "category": "WEAK_COPYLEFT",
+      "risk_level": "MEDIUM",
+      "capabilities": {
+        "use": true,
+        "copy": true,
+        "modify": true,
+        "distribute": true,
+        "sell": true,
+        "saas": true,
+        "private_use": true
+      },
+      "obligations": {
+        "attribution": true,
+        "include_license": true,
+        "include_notice": true,
+        "state_changes": true,
+        "disclose_source": true,
+        "share_alike": false,
+        "patent_grant": false,
+        "patent_retaliation": false,
+        "network_copyleft": false,
+        "no_trademark_use": false,
+        "no_endorsement": false,
+        "warranty_disclaimer": true,
+        "source_offer": true,
+        "file_level_copyleft": false
+      },
+      "summary": {
+        "fr": "Copyleft faible. Redistribution peut imposer obligations (surtout si modification).",
+        "en": "Weak copyleft. Redistribution may impose obligations (especially if modified)."
+      },
+      "notes": {
+        "fr": "⚠️ LGPL-2.1\nCopyleft faible.\nRedistribution peut imposer obligations (surtout si modification).",
+        "en": "⚠️ LGPL-2.1\nWeak copyleft.\nRedistribution may impose obligations (especially if modified)."
+      },
+      "aliases": [
+        "LGPL-2.1",
+        "LGPLv2.1",
+        "GNU Lesser General Public License v2.1"
+      ]
+    },
+    "LGPL-3.0-only": {
+      "spdx": "LGPL-3.0-only",
+      "category": "WEAK_COPYLEFT",
+      "risk_level": "MEDIUM",
+      "capabilities": {
+        "use": true,
+        "copy": true,
+        "modify": true,
+        "distribute": true,
+        "sell": true,
+        "saas": true,
+        "private_use": true
+      },
+      "obligations": {
+        "attribution": true,
+        "include_license": true,
+        "include_notice": true,
+        "state_changes": true,
+        "disclose_source": true,
+        "share_alike": false,
+        "patent_grant": false,
+        "patent_retaliation": false,
+        "network_copyleft": false,
+        "no_trademark_use": false,
+        "no_endorsement": false,
+        "warranty_disclaimer": true,
+        "source_offer": true,
+        "file_level_copyleft": false
+      },
+      "summary": {
+        "fr": "Copyleft faible. Obligations en cas de redistribution (notamment si modification).",
+        "en": "Weak copyleft. Obligations upon redistribution (especially if modified)."
+      },
+      "notes": {
+        "fr": "⚠️ LGPL-3.0\nCopyleft faible.\nObligations en cas de redistribution (notamment si modification).",
+        "en": "⚠️ LGPL-3.0\nWeak copyleft.\nObligations upon redistribution (especially if modified)."
+      },
+      "aliases": [
+        "LGPL-3.0",
+        "LGPLv3",
+        "GNU Lesser General Public License v3.0"
+      ]
+    },
+    "GPL-2.0-only": {
+      "spdx": "GPL-2.0-only",
+      "category": "STRONG_COPYLEFT",
+      "risk_level": "HIGH",
+      "capabilities": {
+        "use": true,
+        "copy": true,
+        "modify": true,
+        "distribute": true,
+        "sell": false,
+        "saas": true,
+        "private_use": true
+      },
+      "obligations": {
+        "attribution": true,
+        "include_license": true,
+        "include_notice": true,
+        "state_changes": true,
+        "disclose_source": true,
+        "share_alike": true,
+        "patent_grant": false,
+        "patent_retaliation": false,
+        "network_copyleft": false,
+        "no_trademark_use": false,
+        "no_endorsement": false,
+        "warranty_disclaimer": true,
+        "source_offer": true,
+        "file_level_copyleft": false
+      },
+      "summary": {
+        "fr": "Copyleft fort : la redistribution impose de publier le code source sous GPL.",
+        "en": "Strong copyleft: redistribution requires disclosing source under GPL."
+      },
+      "notes": {
+        "fr": "🚫 GPL-2.0\nCopyleft fort : la redistribution impose de publier le code source sous GPL.\nVente de produits propriétaires déconseillée.",
+        "en": "🚫 GPL-2.0\nStrong copyleft: redistribution requires disclosing source under GPL.\nSelling proprietary products discouraged."
+      },
+      "aliases": [
+        "GPL-2.0",
+        "GPLv2",
+        "GNU General Public License v2.0"
+      ]
+    },
+    "GPL-3.0-only": {
+      "spdx": "GPL-3.0-only",
+      "category": "STRONG_COPYLEFT",
+      "risk_level": "HIGH",
+      "capabilities": {
+        "use": true,
+        "copy": true,
+        "modify": true,
+        "distribute": true,
+        "sell": false,
+        "saas": true,
+        "private_use": true
+      },
+      "obligations": {
+        "attribution": true,
+        "include_license": true,
+        "include_notice": true,
+        "state_changes": true,
+        "disclose_source": true,
+        "share_alike": true,
+        "patent_grant": false,
+        "patent_retaliation": false,
+        "network_copyleft": false,
+        "no_trademark_use": false,
+        "no_endorsement": false,
+        "warranty_disclaimer": true,
+        "source_offer": true,
+        "file_level_copyleft": false
+      },
+      "summary": {
+        "fr": "Copyleft fort : distribution => publication du code source sous GPL.",
+        "en": "Strong copyleft: distribution => disclose source under GPL."
+      },
+      "notes": {
+        "fr": "🚫 GPL-3.0\nCopyleft fort : distribution => publication du code source sous GPL.\nVente de produits propriétaires déconseillée.",
+        "en": "🚫 GPL-3.0\nStrong copyleft: distribution => disclose source under GPL.\nSelling proprietary products discouraged."
+      },
+      "aliases": [
+        "GPL-3.0",
+        "GPLv3",
+        "GNU General Public License v3.0"
+      ]
+    },
+    "AGPL-3.0-only": {
+      "spdx": "AGPL-3.0-only",
+      "category": "NETWORK_COPYLEFT",
+      "risk_level": "CRITICAL",
+      "capabilities": {
+        "use": true,
+        "copy": true,
+        "modify": true,
+        "distribute": true,
+        "sell": false,
+        "saas": false,
+        "private_use": true
+      },
+      "obligations": {
+        "attribution": true,
+        "include_license": true,
+        "include_notice": true,
+        "state_changes": true,
+        "disclose_source": true,
+        "share_alike": true,
+        "patent_grant": false,
+        "patent_retaliation": false,
+        "network_copyleft": true,
+        "no_trademark_use": false,
+        "no_endorsement": false,
+        "warranty_disclaimer": true,
+        "source_offer": true,
+        "file_level_copyleft": false
+      },
+      "summary": {
+        "fr": "Copyleft réseau : usage via un service (SaaS) impose de fournir le code source aux utilisateurs.",
+        "en": "Network copyleft: providing the software as a service requires offering source to users."
+      },
+      "notes": {
+        "fr": "🚫 AGPL-3.0\nCe package ne peut pas être utilisé dans un SaaS sans ouvrir le code source.\nCopyleft réseau très strict.",
+        "en": "🚫 AGPL-3.0\nThis package cannot be used in SaaS without opening the source code.\nVery strict network copyleft."
+      },
+      "aliases": [
+        "AGPL-3.0",
+        "AGPLv3",
+        "GNU Affero General Public License v3.0"
+      ]
+    },
+    "PROPRIETARY": {
+      "spdx": "PROPRIETARY",
+      "category": "PROPRIETARY",
+      "risk_level": "HIGH",
+      "capabilities": {
+        "use": true,
+        "copy": false,
+        "modify": false,
+        "distribute": false,
+        "sell": false,
+        "saas": false,
+        "private_use": true
+      },
+      "obligations": {
+        "attribution": false,
+        "include_license": false,
+        "include_notice": false,
+        "state_changes": false,
+        "disclose_source": false,
+        "share_alike": false,
+        "patent_grant": false,
+        "patent_retaliation": false,
+        "network_copyleft": false,
+        "no_trademark_use": true,
+        "no_endorsement": true,
+        "warranty_disclaimer": true,
+        "source_offer": false,
+        "file_level_copyleft": false
+      },
+      "summary": {
+        "fr": "Logiciel propriétaire. Les droits dépendent d'un contrat ou des conditions d'utilisation.",
+        "en": "Proprietary software. Rights depend on a contract or terms of service."
+      },
+      "notes": {
+        "fr": "🚫 PROPRIETARY\nLogiciel propriétaire.\nVérifier EULA / ToS avant toute redistribution, intégration ou usage commercial.",
+        "en": "🚫 PROPRIETARY\nProprietary software.\nReview EULA / ToS before redistribution, integration, or commercial use."
+      },
+      "aliases": [
+        "Proprietary",
+        "Commercial",
+        "Commercial License",
+        "Closed Source",
+        "All rights reserved"
+      ]
+    },
+    "BSD-AMBIGUOUS": {
+      "spdx": "BSD-AMBIGUOUS",
+      "category": "AMBIGUOUS",
+      "risk_level": "MEDIUM",
+      "capabilities": {
+        "use": null,
+        "copy": null,
+        "modify": null,
+        "distribute": null,
+        "sell": null,
+        "saas": null,
+        "private_use": null
+      },
+      "obligations": {
+        "attribution": null,
+        "include_license": null,
+        "include_notice": null,
+        "state_changes": null,
+        "disclose_source": null,
+        "share_alike": null,
+        "patent_grant": null,
+        "patent_retaliation": null,
+        "network_copyleft": null,
+        "no_trademark_use": null,
+        "no_endorsement": null,
+        "warranty_disclaimer": null,
+        "source_offer": null,
+        "file_level_copyleft": null
+      },
+      "summary": {
+        "fr": "BSD n'est pas une seule licence : il y a BSD-2-Clause, BSD-3-Clause, BSD-4-Clause, etc.",
+        "en": "BSD is not a single license: there are BSD-2-Clause, BSD-3-Clause, BSD-4-Clause, etc."
+      },
+      "notes": {
+        "fr": "⚠️ BSD (licence ambiguë)\nBSD n'est pas une seule licence : il y a BSD-2-Clause, BSD-3-Clause, BSD-4-Clause, etc.\n👉 Les obligations/droits ne sont pas exactement identiques.\n📋 Action requise : Vérifier le fichier LICENSE du dépôt ou classifier automatiquement via l'API GitHub.",
+        "en": "⚠️ BSD (ambiguous license)\nBSD is not a single license: there are BSD-2-Clause, BSD-3-Clause, BSD-4-Clause, etc.\n👉 Rights/obligations are not exactly identical.\n📋 Action required: Check LICENSE file in repository or auto-classify via GitHub API."
+      },
+      "aliases": [
+        "BSD",
+        "BSD License",
+        "Berkeley Software Distribution"
+      ]
+    },
+    "APACHE-AMBIGUOUS": {
+      "spdx": "APACHE-AMBIGUOUS",
+      "category": "AMBIGUOUS",
+      "risk_level": "MEDIUM",
+      "capabilities": {
+        "use": null,
+        "copy": null,
+        "modify": null,
+        "distribute": null,
+        "sell": null,
+        "saas": null,
+        "private_use": null
+      },
+      "obligations": {
+        "attribution": null,
+        "include_license": null,
+        "include_notice": null,
+        "state_changes": null,
+        "disclose_source": null,
+        "share_alike": null,
+        "patent_grant": null,
+        "patent_retaliation": null,
+        "network_copyleft": null,
+        "no_trademark_use": null,
+        "no_endorsement": null,
+        "warranty_disclaimer": null,
+        "source_offer": null,
+        "file_level_copyleft": null
+      },
+      "summary": {
+        "fr": "Apache seul peut être flou : en pratique on veut dire Apache-2.0, mais Apache-1.0 ou Apache-1.1 existent aussi.",
+        "en": "Apache alone can be ambiguous: in practice we mean Apache-2.0, but Apache-1.0 or Apache-1.1 also exist."
+      },
+      "notes": {
+        "fr": "⚠️ Apache (licence ambiguë)\nApache seul peut être flou : en pratique on veut dire Apache-2.0, mais Apache-1.0 ou Apache-1.1 existent aussi.\n👉 Les versions ont des obligations différentes (notamment sur les brevets).\n📋 Action requise : Vérifier le fichier LICENSE du dépôt ou classifier automatiquement via l'API GitHub.",
+        "en": "⚠️ Apache (ambiguous license)\nApache alone can be ambiguous: in practice we mean Apache-2.0, but Apache-1.0 or Apache-1.1 also exist.\n👉 Versions have different obligations (especially regarding patents).\n📋 Action required: Check LICENSE file in repository or auto-classify via GitHub API."
+      },
+      "aliases": [
+        "Apache",
+        "Apache License",
+        "ASF"
+      ]
+    },
+    "HPND": {
+      "spdx": "HPND",
+      "category": "PERMISSIVE",
+      "risk_level": "LOW",
+      "capabilities": {
+        "use": true,
+        "copy": true,
+        "modify": true,
+        "distribute": true,
+        "sell": true,
+        "saas": true,
+        "private_use": true
+      },
+      "obligations": {
+        "attribution": true,
+        "include_license": true,
+        "include_notice": true,
+        "state_changes": false,
+        "disclose_source": false,
+        "share_alike": false,
+        "patent_grant": false,
+        "patent_retaliation": false,
+        "network_copyleft": false,
+        "no_trademark_use": false,
+        "no_endorsement": false,
+        "warranty_disclaimer": true,
+        "source_offer": false,
+        "file_level_copyleft": false
+      },
+      "summary": {
+        "fr": "Licence permissive historique (Historical Permission Notice and Disclaimer). Très similaire à MIT.",
+        "en": "Historical Permission Notice and Disclaimer license. Very similar to MIT."
+      },
+      "notes": {
+        "fr": "✅ HPND\nLicence permissive historique (Historical Permission Notice and Disclaimer).\nUtilisée par Pillow et d'autres projets anciens.\nTrès similaire à MIT : conserver copyright et licence.",
+        "en": "✅ HPND\nHistorical Permission Notice and Disclaimer license.\nUsed by Pillow and other legacy projects.\nVery similar to MIT: keep copyright and license."
+      },
+      "aliases": [
+        "Historical Permission Notice and Disclaimer",
+        "HPND License"
+      ]
+    }
+  },
+  "aliasToSpdx": {
+    "Not specified": "UNKNOWN",
+    "Not specified or unknown": "UNKNOWN",
+    "Unknown": "UNKNOWN",
+    "UNLICENSED": "UNKNOWN",
+    "NOASSERTION": "UNKNOWN",
+    "N/A": "UNKNOWN",
+    "MIT License": "MIT",
+    "The MIT License (MIT)": "MIT",
+    "MIT": "MIT",
+    "BSD 2-Clause": "BSD-2-Clause",
+    "BSD-2": "BSD-2-Clause",
+    "BSD-2-Clause License": "BSD-2-Clause",
+    "BSD 3-Clause": "BSD-3-Clause",
+    "BSD-3": "BSD-3-Clause",
+    "BSD 3-Clause License Copyright": "BSD-3-Clause",
+    "Apache 2.0": "Apache-2.0",
+    "Apache-2.0": "Apache-2.0",
+    "Apache License 2.0": "Apache-2.0",
+    "Apache License, Version 2.0": "Apache-2.0",
+    "Apache License, Version 2.0 License": "Apache-2.0",
+    "Apache 2.0 License": "Apache-2.0",
+    "Mozilla Public License 2.0": "MPL-2.0",
+    "MPL 2.0": "MPL-2.0",
+    "LGPL-2.1": "LGPL-2.1-only",
+    "LGPLv2.1": "LGPL-2.1-only",
+    "GNU Lesser General Public License v2.1": "LGPL-2.1-only",
+    "LGPL-3.0": "LGPL-3.0-only",
+    "LGPLv3": "LGPL-3.0-only",
+    "GNU Lesser General Public License v3.0": "LGPL-3.0-only",
+    "GPL-2.0": "GPL-2.0-only",
+    "GPLv2": "GPL-2.0-only",
+    "GNU General Public License v2.0": "GPL-2.0-only",
+    "GPL-3.0": "GPL-3.0-only",
+    "GPLv3": "GPL-3.0-only",
+    "GNU General Public License v3.0": "GPL-3.0-only",
+    "AGPL-3.0": "AGPL-3.0-only",
+    "AGPLv3": "AGPL-3.0-only",
+    "GNU Affero General Public License v3.0": "AGPL-3.0-only",
+    "ISC License": "ISC",
+    "The Unlicense": "Unlicense",
+    "CC0": "CC0-1.0",
+    "Creative Commons Zero v1.0 Universal": "CC0-1.0",
+    "Do What The F*ck You Want To Public License": "WTFPL",
+    "Proprietary": "PROPRIETARY",
+    "Commercial": "PROPRIETARY",
+    "Commercial License": "PROPRIETARY",
+    "Closed Source": "PROPRIETARY",
+    "All rights reserved": "PROPRIETARY",
+    "BSD": "BSD-AMBIGUOUS",
+    "BSD License": "BSD-AMBIGUOUS",
+    "Berkeley Software Distribution": "BSD-AMBIGUOUS",
+    "Apache": "APACHE-AMBIGUOUS",
+    "Apache License": "APACHE-AMBIGUOUS",
+    "ASF": "APACHE-AMBIGUOUS",
+    "Historical Permission Notice and Disclaimer": "HPND",
+    "HPND License": "HPND"
+  }
+}

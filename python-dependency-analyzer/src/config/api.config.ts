@@ -22,4 +22,8 @@ export const API_CONFIG = {
     baseUrl: import.meta.env.VITE_CVE_API_URL || 'https://cve.circl.lu/api',
     timeout: 10000,
   },
+  osv: {
+    baseUrl: import.meta.env.VITE_OSV_API_URL || 'https://api.osv.dev/v1',
+    timeout: 10000,
+  },
 } as const;

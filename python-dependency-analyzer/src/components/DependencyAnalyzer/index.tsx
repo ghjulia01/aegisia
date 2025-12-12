@@ -6,10 +6,11 @@
  */
 
 import React, { useState } from 'react';
-import { useDependencyAnalysis } from '@hooks/use_dependency_analysis';
+import { useDependencyContext } from '../../contexts/DependencyContext';
 import { useLanguage } from '@hooks/use_language_hook';
 import type { Dependency } from '@/types';
 import { DependencyTable } from '../shared/DependencyTable';
+import { ComplianceTable } from '../shared/ComplianceTable';
 import DependencyGraph from '../DependencyGraph/DependencyGraph';
 import { GraphDataBuilder } from '@/utils/graph/GraphDataBuilder';
 import { useMemo } from 'react';
@@ -19,7 +20,7 @@ import { useMemo } from 'react';
  */
 export const DependencyAnalyzer: React.FC = () => {
   const [packageInput, setPackageInput] = useState('');
-  const [selectedTab, setSelectedTab] = useState<'table' | 'chart' | 'graph'>('table');
+  const [selectedTab, setSelectedTab] = useState<'table' | 'chart' | 'graph' | 'compliance'>('table');
   
   const {
     dependencies,
@@ -28,13 +29,12 @@ export const DependencyAnalyzer: React.FC = () => {
     isAnalyzing,
     error,
     progress,
-    analyzeDependency,
-    analyzeMultipleDependencies,
-    clearResults,
-    exportReport,
-    removePackage
-  , replaceDependency
-  } = useDependencyAnalysis();
+    analyzePackage: analyzeDependency,
+    analyzeMultiplePackages: analyzeMultipleDependencies,
+    clearAll: clearResults,
+    removePackage,
+    replaceDependency
+  } = useDependencyContext();
 
   const [filters, setFilters] = useState<{
     minSimilarity?: number;
@@ -283,6 +283,17 @@ export const DependencyAnalyzer: React.FC = () => {
                 >
                   Graph
                 </button>
+
+                <button
+                  onClick={() => setSelectedTab('compliance')}
+                  className={`px-6 py-2 rounded-t-lg font-medium transition-colors ${
+                    selectedTab === 'compliance'
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  ⚖️ Compliance
+                </button>
               </div>
 
               {/* Export Button */}
@@ -306,6 +317,11 @@ export const DependencyAnalyzer: React.FC = () => {
 
             {selectedTab === 'graph' && (
               <DependencyGraph data={graphData} />
+            )}
+
+            {/* Compliance View */}
+            {selectedTab === 'compliance' && (
+              <ComplianceTable dependencies={dependencies} />
             )}
           </div>
         )}

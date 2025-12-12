@@ -349,17 +349,27 @@ export class PyPIClient {
   }
 
   /**
-   * Extract license from classifiers or direct field
+   * Extract license from PyPI package info
+   * Priority: license_expression (SPDX) > license > classifiers
    * @param info - PyPI package info
    * @returns License string or null
    */
   extractLicense(info: PyPIPackageInfo['info']): string | null {
-    // 1. Try direct license field first
+    // 1. PRIORITY: Try license_expression first (SPDX standardized - added by PyPI recently)
+    // This is the most reliable field as it uses SPDX identifiers
+    const licenseExpression = (info as any).license_expression;
+    if (licenseExpression && typeof licenseExpression === 'string' && licenseExpression.trim()) {
+      console.log(`[PyPI] Found license_expression: ${licenseExpression}`);
+      return licenseExpression.trim();
+    }
+
+    // 2. Try direct license field (often ambiguous like "BSD" or "Apache")
     if (info.license && info.license.trim()) {
+      console.log(`[PyPI] Found license field: ${info.license}`);
       return info.license;
     }
 
-    // 2. Try to extract from classifiers
+    // 3. Try to extract from classifiers (fallback)
     const classifiers = info.classifiers || [];
     
     // Map of classifier patterns to license names
@@ -395,23 +405,49 @@ export class PyPIClient {
 
   /**
    * Get GitHub homepage from project_urls
+   * Searches multiple fields in priority order
    * @param info - PyPI package info
    * @returns GitHub URL or null
    */
   getGitHubUrl(info: PyPIPackageInfo['info']): string | null {
     // 1. Try home_page first
     if (info.home_page && info.home_page.includes('github.com')) {
+      console.log(`[PyPI] Found GitHub URL in home_page: ${info.home_page}`);
       return info.home_page;
     }
 
-    // 2. Try project_urls
+    // 2. Try project_urls with priority keys
     const projectUrls = info.project_urls || {};
-    for (const [key, url] of Object.entries(projectUrls)) {
+    const priorityKeys = [
+      'Repository',
+      'Source',
+      'Source Code',
+      'Homepage',
+      'repository',
+      'source',
+      'Code',
+      'GitHub',
+      'github'
+    ];
+
+    // First try priority keys
+    for (const key of priorityKeys) {
+      const url = projectUrls[key];
       if (url && url.includes('github.com')) {
+        console.log(`[PyPI] Found GitHub URL in project_urls.${key}: ${url}`);
         return url;
       }
     }
 
+    // Then try all other keys
+    for (const [key, url] of Object.entries(projectUrls)) {
+      if (url && url.includes('github.com')) {
+        console.log(`[PyPI] Found GitHub URL in project_urls.${key}: ${url}`);
+        return url;
+      }
+    }
+
+    console.log(`[PyPI] No GitHub URL found in package metadata`);
     return null;
   }
 }

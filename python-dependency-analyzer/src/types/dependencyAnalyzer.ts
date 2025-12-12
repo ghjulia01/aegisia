@@ -78,7 +78,7 @@ export class DependencyAnalyzer {
         dependencies: dependencies.map(d => d.name),
         hasCVE: await this.checkForCVE(packageName),
         riskScore: await this.calculateRiskScore(packageName),
-        license: packageData.info?.license
+        license: (packageData.info as any)?.license_expression || packageData.info?.license || 'Not specified'
       };
 
       tree.nodes.set(packageName, node);

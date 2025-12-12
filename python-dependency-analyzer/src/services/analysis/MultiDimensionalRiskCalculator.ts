@@ -65,29 +65,52 @@ export class MultiDimensionalRiskCalculator {
     dep: Dependency,
     enrichedData: EnrichedData
   ): SecurityRiskDetails {
-    let score = 0; // Start at 0 (optimistic)
     const concerns: string[] = [];
     
     const cveData = enrichedData.cveData;
     const cveCount = cveData?.count || dep.vulnerabilities?.length || 0;
     const criticalCveCount = cveData?.critical || 0;
 
-    if (criticalCveCount > 0) {
-      score += 8.0;
-      concerns.push(`${criticalCveCount} critical CVE${criticalCveCount > 1 ? 's' : ''} found`);
+    // SÉVÉRITÉ : basée sur le nombre et la criticité des CVEs
+    let severityScore = 0;
+    if (criticalCveCount >= 10) {
+      severityScore = 10.0;
+      concerns.push(`⚠️ CRITIQUE: ${criticalCveCount} CVEs critiques`);
+    } else if (criticalCveCount >= 5) {
+      severityScore = 9.0;
+      concerns.push(`${criticalCveCount} CVEs critiques`);
+    } else if (criticalCveCount >= 1) {
+      severityScore = 8.0;
+      concerns.push(`${criticalCveCount} CVE${criticalCveCount > 1 ? 's' : ''} critique${criticalCveCount > 1 ? 's' : ''}`);
+    } else if (cveCount >= 50) {
+      severityScore = 7.0;
+      concerns.push(`${cveCount} vulnérabilités (HIGH severity likely)`);
+    } else if (cveCount >= 20) {
+      severityScore = 5.0;
+      concerns.push(`${cveCount} vulnérabilités détectées`);
+    } else if (cveCount >= 10) {
+      severityScore = 4.0;
+      concerns.push(`${cveCount} vulnérabilités`);
     } else if (cveCount >= 5) {
-      score += 6.0;
-      concerns.push(`${cveCount} vulnerabilities found`);
-    } else if (cveCount >= 3) {
-      score += 4.0;
-      concerns.push(`${cveCount} vulnerabilities found`);
+      severityScore = 3.0;
+      concerns.push(`${cveCount} vulnérabilités`);
     } else if (cveCount > 0) {
-      score += 2.0;
-      concerns.push(`${cveCount} minor vulnerabilit${cveCount > 1 ? 'ies' : 'y'} found`);
+      severityScore = 2.0;
+      concerns.push(`${cveCount} vulnérabilité${cveCount > 1 ? 's' : ''} mineure${cveCount > 1 ? 's' : ''}`);
     }
 
+    // APPLICABILITÉ : toutes les CVEs sont considérées applicables sans info de version corrigée
+    // Score 0-10 : 0 = aucune applicable, 10 = toutes applicables
+    const applicabilityScore = cveCount > 0 ? 8.0 : 0; // Conservative: assume most are applicable
+    if (cveCount > 0) {
+      concerns.push('⚠️ Versions affectées non vérifiées (assume applicables)');
+    }
+
+    // SCORE FINAL : moyenne pondérée (sévérité 60%, applicabilité 40%)
+    const score = (severityScore * 0.6) + (applicabilityScore * 0.4);
+
     return {
-      score: Math.min(10, score),
+      score: Math.min(10, Math.round(score * 10) / 10),
       cveCount,
       criticalCveCount,
       knownVulnerabilities: cveCount > 0,
@@ -244,24 +267,33 @@ export class MultiDimensionalRiskCalculator {
     dep: Dependency,
     enrichedData: EnrichedData
   ): ComplianceRiskDetails {
-    let score = 2.0; // Base optimiste
+    let score = 0; // Start at 0
     const concerns: string[] = [];
     
     const license = dep.license || enrichedData.pypiData?.license || 'Unknown';
     const licenseCategory = this.categorizeLicense(license);
 
-    if (licenseCategory === 'unknown' || license === 'Unknown' || license === 'Not specified') {
-      score += 4.0;
-      concerns.push('License not specified or unknown');
-    } else if (licenseCategory === 'copyleft-strong') {
-      score += 2.5;
-      concerns.push('Strong copyleft license (GPL) - requires careful review');
-    } else if (licenseCategory === 'copyleft-weak') {
-      score += 1.0;
-      concerns.push('Weak copyleft license (LGPL/MPL) - some restrictions apply');
-    } else if (licenseCategory === 'proprietary') {
-      score += 5.0;
-      concerns.push('Proprietary license - commercial usage restrictions');
+    // UNKNOWN LICENSE = RISQUE ÉLEVÉ (≥ 7/10)
+    if (licenseCategory === 'unknown' || license === 'Unknown' || license === 'Not specified' || !license) {
+      score = 7.0;
+      concerns.push('⚠️ Licence inconnue - BLOCAGE POTENTIEL (besoin de review)');
+    } 
+    // GPL/AGPL = BESOIN DE CLASSIFICATION
+    else if (licenseCategory === 'copyleft-strong') {
+      score = 6.0;
+      concerns.push('⚠️ GPL/AGPL détecté - CLASSIFICATION REQUISE (distribution vs usage interne)');
+    } 
+    else if (licenseCategory === 'copyleft-weak') {
+      score = 3.0;
+      concerns.push('LGPL/MPL - Restrictions limitées, review recommandée');
+    } 
+    else if (licenseCategory === 'proprietary') {
+      score = 8.0;
+      concerns.push('⚠️ Licence propriétaire - Restrictions commerciales');
+    }
+    else if (licenseCategory === 'permissive') {
+      score = 1.0;
+      concerns.push(`Licence permissive (${license}) - OK`);
     }
 
     const hasLicenseConflict = false; // À implémenter si nécessaire
@@ -281,26 +313,52 @@ export class MultiDimensionalRiskCalculator {
 
   private calculateSupplyChainRisk(
     dep: Dependency,
-    _enrichedData: EnrichedData
+    enrichedData: EnrichedData
   ): SupplyChainRiskDetails {
-    let score = 1.0; // Base optimiste
+    let score = 0; // Start at 0
     const concerns: string[] = [];
     
     const directDependencies = dep.transitiveDeps?.length || 0;
     const transitiveDependencies = 0; // Nécessiterait un graphe complet
     const depthLevel = 1;
 
+    // DÉPENDANCES DIRECTES
     if (directDependencies > 50) {
-      score += 4.0;
-      concerns.push(`Very high dependency count (${directDependencies} direct dependencies)`);
+      score += 6.0;
+      concerns.push(`⚠️ ${directDependencies} dépendances directes (surface d'attaque élevée)`);
     } else if (directDependencies > 20) {
-      score += 2.5;
-      concerns.push(`High dependency count (${directDependencies} direct dependencies)`);
+      score += 4.0;
+      concerns.push(`${directDependencies} dépendances (complexité élevée)`);
     } else if (directDependencies > 10) {
-      score += 1.0;
-      concerns.push(`Moderate dependency count (${directDependencies} dependencies)`);
+      score += 2.5;
+      concerns.push(`${directDependencies} dépendances (complexité modérée)`);
     } else if (directDependencies === 0) {
-      score -= 0.5;
+      score = 0.5;
+      concerns.push('Aucune dépendance directe ✓');
+    } else {
+      score = 1.0;
+      concerns.push(`${directDependencies} dépendances (faible)`);
+    }
+
+    // DÉPENDANCES NATIVES / WHEELS (heuristique basée sur le nom)
+    const hasNativeDeps = this.hasNativeDependencies(dep.name);
+    if (hasNativeDeps) {
+      score += 1.5;
+      concerns.push('Dépendances natives/compilées détectées (wheels, OS packages)');
+    }
+
+    // BUILD TOOLCHAIN (packages nécessitant compilation)
+    const requiresCompilation = this.requiresCompilationToolchain(dep.name);
+    if (requiresCompilation) {
+      score += 1.0;
+      concerns.push('Nécessite toolchain de compilation (risque supply chain élevé)');
+    }
+
+    // MAINTAINER TRUST (packages avec peu de maintainers = risque)
+    const githubData = enrichedData.githubData;
+    if (githubData && (githubData.forks || 0) < 10 && (githubData.stars || 0) < 100) {
+      score += 1.5;
+      concerns.push('Faible communauté de contributeurs (single point of failure)');
     }
 
     return {
@@ -312,8 +370,36 @@ export class MultiDimensionalRiskCalculator {
     };
   }
 
+  /**
+   * Détecte si un package a probablement des dépendances natives (C/C++)
+   */
+  private hasNativeDependencies(packageName: string): boolean {
+    const nativePackages = [
+      'pillow', 'opencv-python', 'numpy', 'scipy', 'pandas',
+      'torch', 'tensorflow', 'psycopg2', 'lxml', 'cryptography',
+      'pycrypto', 'pymongo', 'mysqlclient', 'pyzmq', 'grpcio',
+      'gevent', 'greenlet', 'markupsafe', 'pyyaml', 'cffi',
+      'bcrypt', 'argon2-cffi', 'multidict', 'yarl', 'frozenlist'
+    ];
+    return nativePackages.includes(packageName.toLowerCase());
+  }
+
+  /**
+   * Détecte si un package nécessite une toolchain de compilation
+   */
+  private requiresCompilationToolchain(packageName: string): boolean {
+    const compilationRequired = [
+      'torch', 'tensorflow', 'opencv-python', 'scipy',
+      'scikit-learn', 'cryptography', 'psycopg2', 'lxml',
+      'grpcio', 'protobuf', 'mysqlclient'
+    ];
+    return compilationRequired.includes(packageName.toLowerCase());
+  }
+
   // ==========================================
-  // OVERALL SCORE - IMPROVED (Dynamic Weights)
+  // OVERALL SCORE - FIXED WEIGHTS
+  // Security *6, Operational *3, Supply Chain *1 = 10
+  // Compliance is EXCLUDED from overall score (displayed separately)
   // ==========================================
 
   private calculateOverallScore(scores: {
@@ -322,87 +408,21 @@ export class MultiDimensionalRiskCalculator {
     compliance: ComplianceRiskDetails;
     supplyChain: SupplyChainRiskDetails;
   }): number {
-    const weights = this.calculateDynamicWeights(scores);
+    // PONDÉRATION FIXE (total = 10)
+    const weights = {
+      security: 0.6,      // 6/10
+      operational: 0.3,   // 3/10
+      supplyChain: 0.1,   // 1/10
+      compliance: 0.0,    // EXCLUDED from overall score
+    };
 
     const overall =
       scores.security.score * weights.security +
       scores.operational.score * weights.operational +
-      scores.compliance.score * weights.compliance +
       scores.supplyChain.score * weights.supplyChain;
+      // Compliance NOT included in overall calculation
 
     return Math.round(overall * 10) / 10;
-  }
-
-  private calculateDynamicWeights(scores: {
-    security: SecurityRiskDetails;
-    operational: OperationalRiskDetails;
-    compliance: ComplianceRiskDetails;
-    supplyChain: SupplyChainRiskDetails;
-  }): {
-    security: number;
-    operational: number;
-    compliance: number;
-    supplyChain: number;
-  } {
-    // Critical CVE → Security dominance
-    if (scores.security.criticalCveCount > 0) {
-      return {
-        security: 0.60,
-        operational: 0.15,
-        compliance: 0.10,
-        supplyChain: 0.15,
-      };
-    }
-
-    // CVE present
-    if (scores.security.cveCount > 0) {
-      return {
-        security: 0.50,
-        operational: 0.20,
-        compliance: 0.10,
-        supplyChain: 0.20,
-      };
-    }
-
-    // Abandoned package
-    if (scores.operational.isArchived || 
-        scores.operational.maintenanceFrequency === 'abandoned') {
-      return {
-        security: 0.30,
-        operational: 0.40,
-        compliance: 0.10,
-        supplyChain: 0.20,
-      };
-    }
-
-    // License issues
-    if (scores.compliance.licenseCategory === 'unknown' || 
-        scores.compliance.score >= 6) {
-      return {
-        security: 0.35,
-        operational: 0.20,
-        compliance: 0.25,
-        supplyChain: 0.20,
-      };
-    }
-
-    // Complex supply chain
-    if (scores.supplyChain.directDependencies > 20) {
-      return {
-        security: 0.35,
-        operational: 0.20,
-        compliance: 0.15,
-        supplyChain: 0.30,
-      };
-    }
-
-    // Default weights
-    return {
-      security: 0.40,
-      operational: 0.25,
-      compliance: 0.15,
-      supplyChain: 0.20,
-    };
   }
 
   // ==========================================
